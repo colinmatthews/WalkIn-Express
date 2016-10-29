@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script
+    src="https://code.jquery.com/jquery-1.12.4.js"
+    integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/1.0.17/vue.common.js"></script>
+</head>
+<body>
+
+<div id="vue-instance">
+    <ul>
+        <li v-for="item in inventory">
+            {{ item.name }}
+        </li>
+    </ul>
+</div>
+
+<script src="http://cdn.jsdelivr.net/vue/1.0.16/vue.js"></script>
+
+<script>
+
+
+    var socket = io.connect();
+    socket.emit("getDoctors");
+
+    var vm = new Vue({
+        el: '#vue-instance',
+        data: {
+            inventory: [
+            ]
+        },
+        created:function(){
+            socket.on("initDoctors",function(data) {
+
+                for (var i = 0; i < data.length; i++) {
+                    vm.inventory.push({name:data[i].name,id:data[i].id});
+                }
+                socket.emit("updateDoctors");
+            });
+
+            socket.on("updateDoctorsResults",function(data){
+                if(data.new_val!= null){
+                    vm.inventory.push({name: data.new_val.name,
+                                        id:data.new_val.id});
+                }
+                if(data.old_val!=null) {
+                    for (var i = 0; i < vm.inventory.length; i++) {
+                        if (vm.inventory[i].id == data.old_val.id) {
+                            //console.log(data.old_val.name);
+                            vm.inventory.splice(i,1);
+                        }
+                    }
+                }
+
+            });
+        }
+    });
+
+
+
+
+
+</script>
+<p id="test"></p>
+</body>
+</html>

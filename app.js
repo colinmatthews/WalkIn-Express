@@ -11,7 +11,7 @@ var r = require('rethinkdb');
 
 var port = 8000;
 http.listen(port);
-app.use(express.static(path.join(__dirname, 'public/')));
+app.use(express.static(path.join(__dirname, '/public')));
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');

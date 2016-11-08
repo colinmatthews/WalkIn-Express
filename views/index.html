@@ -3,28 +3,26 @@
     <meta charset="UTF-8">
     <title>Title</title>
 
+    <script src="/socket.io/socket.io.js"></script>
+    <script
+    src="https://code.jquery.com/jquery-1.12.4.js"
+    integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+    crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.common.js"></script>
 
     <!-- Bootstrap Core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 
-    <!-- MetisMenu CSS -->
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/css/sb-admin-2.css" />
-    <!-- Custom CSS -->
-
-    <!-- Morris Charts CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.5.2/metisMenu.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/js/sb-admin-2.js"></script>
-
-    <!-- Custom Fonts -->
 
 
 </head>
 
 <body>
-
 <div id="wrapper">
 
     <!-- Navigation -->
@@ -77,6 +75,7 @@
                     </li>
                     <li>
                         <a href="/"><i class="fa fa-dashboard fa-fw"></i> Dashboard</a>
+                        <a href="/set"><i class="fa fa-dashboard fa-fw"></i> Set Appointments</a>
                     </li>
                 </ul>
             </div>
@@ -107,8 +106,9 @@
 <!-- /#wrapper -->
 </body>
 
-<!-- Template for new appointments -->
 
+
+<!-- Template for new appointments -->
 <template id="new-appt">
     <div class="panel panel-yellow" id="newPanel">
         <div class="panel-heading" style="font-size:25px;">
@@ -128,17 +128,12 @@
 
         </div>
         <div class="panel-footer">
-            <button type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()">Dismiss</button>
+            <button type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()" v-on:click="setViewed(item.id)">Dismiss</button>
 
         </div>
     </div>
 </template>
 
 
-<script src="/public/js/dashboard.js"></script>
-<script src="/socket.io/socket.io.js"></script>
-
-<script src="https://code.jquery.com/jquery-1.12.4.js" integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.common.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/js/sb-admin-2.js"></script>
 <script src="http://cdn.jsdelivr.net/vue/1.0.16/vue.js"></script>
+<script src="/public/js/index.js"></script>

@@ -24,40 +24,58 @@ var dbConfig = {
 };
 var rconnection = null;
 
-
-
 io.on("connection",function(socket) {
     console.log("You connected!");
 
-    socket.on("getDoctors", function () {
+    socket.on("getInitial", function () {
         r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.db('test').table('doctors').run(rconnection, function (err, cursor) {
+            r.table('appointments').eqJoin('patient',r.table('patients')).without({"right": {"id": true}}).zip().coerceTo('array').run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
                     console.log(result);
-                    socket.emit("initDoctors", result);
+                    socket.emit("initRecords", result);
                 });
             });
 
         });
     });
 
-    socket.on("updateDoctors", function () {
+    socket.on("updateRecords", function () {
         r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.db('test').table('doctors').changes().run(rconnection, function (err, cursor) {
+            r.db('test').table("appointments").changes().run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.each(function (err, result) {
                     if (err) throw err;
-                    socket.emit("updateDoctorsResults", result);
+                    console.log(result);
+                    socket.emit("updateRecordsResults", result);
                 });
             });
         });
     });
+
+    socket.on("getNewAppointmentPatient",function(patientID) {
+        r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('patients').filter({id: patientID}).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("newAppointmentPatientData", result);
+
+                });
+            });
+        });
+    });
+
+
+
 });
 
 console.log("App listening on port" + port);

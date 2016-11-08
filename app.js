@@ -17,6 +17,10 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 
+app.get('/set', function (req, res) {
+    res.sendFile(__dirname + '/views/set.html');
+});
+
 var dbConfig = {
     host: 'rethinkdb.southcentralus.cloudapp.azure.com',
     port: 28015,
@@ -31,7 +35,7 @@ io.on("connection",function(socket) {
         r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').eqJoin('patient',r.table('patients')).without({"right": {"id": true}}).zip().coerceTo('array').run(rconnection, function (err, cursor) {
+            r.table('appointments').eqJoin('patient',r.table('patients')).without({"right": {"id": true}}).zip().filter({viewed:false}).coerceTo('array').run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
@@ -74,7 +78,43 @@ io.on("connection",function(socket) {
         });
     });
 
+    socket.on("getInitialAppointments", function () {
+        r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("initRecordsAppointments", result);
+                });
+            });
 
+        });
+    });
+
+    socket.on("deleteAppointment", function (appointmentID) {
+        r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').get(appointmentID).delete().run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                console.log("DELETE APPOINTMENT DATA "+cursor);
+                });
+            });
+        });
+
+    socket.on("setViewed",function(appointmentID){
+        r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').get(appointmentID).update({viewed:true}).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                console.log("UPDATE APPOINTMENT VIEWED "+cursor);
+            });
+        });
+    });
 
 });
 

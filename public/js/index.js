@@ -12,6 +12,11 @@ Vue.component('new-appt',{
     methods:{
         setViewed:function(id){
             socket.emit("setViewed",id);
+            for(var n=0;n<vm.inventory.length;n++){
+                if(vm.inventory[n].id == id){
+                    vm.inventory.splice(i,1);
+                }
+            }
         }
     }
 });
@@ -32,10 +37,13 @@ var vm = new Vue({
                 if(data[i].patient!=null) {
                     vm.inventory.push({
                         time: data[i].time, id: data[i].id, DOB: data[i].DOB, healthcard: data[i].healthcard,
-                        phone: data[i].phone, address: data[i].address, name: data[i].name, patient: data[i].patient
+                        phone: data[i].phone, address: data[i].address, name: data[i].name, patient: data[i].patient,
+                        displayTime:data[i].displayTime
                     });
+
                 }
             }
+
             socket.emit("updateRecords");
         });
 
@@ -67,6 +75,7 @@ var vm = new Vue({
                         for(var n = 0; n < results.length ;n ++) {
                             vm.inventory.push({
                                 time: data.new_val.time,
+                                displayTime:data.new_val.displayTime,
                                 id: data.new_val.id,
                                 DOB: results[n].DOB,
                                 healthcard: results[n].healthcard,

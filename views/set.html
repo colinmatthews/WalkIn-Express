@@ -126,11 +126,8 @@
     <div>
         <div class="list-group">
             <div class="list-group-item clearfix">
-                <p>{{ item.time }}</p>
+                <p>{{ item.displayTime }}</p>
                 <span class="pull-right">
-                    <button class="btn btn-xs btn-info">
-                        <span class="glyphicon glyphicon-edit"></span>
-                    </button>
                     <button class="btn btn-xs btn-warning" v-on:click="deleteAppointment(item.id)">
 
                         <span class="glyphicon glyphicon-trash"></span>
@@ -150,7 +147,7 @@
 
                     <div class="modal-header">
                         <div name="header">
-                            <h3>Add new Appointment Slot</h3>
+                            <h3>Add New Appointment Slot</h3>
                         </div>
                     </div>
 
@@ -159,14 +156,26 @@
 
                                     <div class="form-group">
                                         <label for="timeInput">Appointment Time</label>
-                                        <input type="text" class="form-control" id="timeInput" placeholder="Enter time (Ex. 9AM )">
+                                        <input type="text" class="form-control" id="timeInput" placeholder="Enter time (Ex. 9 )">
                                     </div>
+
+
+                                <div class="form-group">
+                                    <label for="sel1">Select period:</label>
+                                    <select class="form-control" id="sel1">
+                                        <option>AM</option>
+                                        <option>PM</option>
+                                    </select>
+                                </div>
+
+
 
                             </div>
                         </div>
 
                         <div class="modal-footer">
                             <div name="footer">
+                                <button class="btn btn-danger" style="float:left;" @click="$emit('close')">Close without saving</button>
                                 <button class="btn btn-primary" style="float:right;" v-on:click="newAppointmentSlot()" @click="$emit('close')">Save</button>
                             </div>
                         </div>

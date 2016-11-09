@@ -120,11 +120,27 @@ io.on("connection",function(socket) {
         r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
+            var displayTime;
+
+            if(appointmentTime == 12){
+                displayTime = appointmentTime + "PM";
+            }
+            else if(appointmentTime == 24){
+                displayTime = appointmentTime-12 + "AM";
+            }
+            else if(appointmentTime > 13){
+                displayTime = appointmentTime-12 + "PM";
+            }
+
+            else{
+                displayTime = appointmentTime + "AM";
+            }
             r.table('appointments').insert({
                 "doctor": "75873b43-51b8-4614-9603-a2ac74e81c0d",
                 "patient": "null",
                 "time": appointmentTime,
-                "viewed": false
+                "viewed": false,
+                "displayTime":displayTime
                 }).run(rconnection, function (err, cursor) {
                     if (err) throw err;
                     console.log("NEW APPOINTMENT MADE " + cursor);

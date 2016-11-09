@@ -21,8 +21,16 @@ Vue.component('modal', {
     template: '#modal-template',
     methods:{
         newAppointmentSlot:function(){
-            var data = document.getElementById('timeInput').value
-            socket.emit("newAppointmentSlot",data);
+            var time = parseInt(document.getElementById('timeInput').value);
+            var zone = document.getElementById('sel1').value;
+            if(zone == "PM" && time != 12){
+
+                time = time + 12;
+            }
+            if(zone == "AM" && time == 12 ){
+                time=time +12;
+            }
+            socket.emit("newAppointmentSlot",time);
         }
     }
 })
@@ -42,7 +50,8 @@ var vm = new Vue({
                 vm.inventory.push({
                     time:data[i].time,
                     id:data[i].id,
-                    patient:data[i].patient
+                    patient:data[i].patient,
+                    displayTime:data[i].displayTime
                 });
             }
             socket.emit('updateRecords');
@@ -53,7 +62,8 @@ var vm = new Vue({
                     vm.inventory.push({
                         time: data.new_val.time,
                         id: data.new_val.id,
-                        patient:data.new_val.patient});
+                        patient:data.new_val.patient,
+                        displayTime:data.new_val.displayTime});
 
             }
 

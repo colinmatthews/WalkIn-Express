@@ -60,7 +60,7 @@ var vm = new Vue({
 
             // if an existing appointment is updated
             else{
-                if(data.new_val.patient!=null && data.new_val.id == data.old_val.id && data.new_val.viewed == false) {
+                if(data.new_val.patient!=null && data.new_val.viewed == false) {
                     socket.emit("getNewAppointmentPatient",data.new_val.patient);
                     socket.on("newAppointmentPatientData",function(results){
 

@@ -17,12 +17,23 @@ Vue.component('appointment',{
 });
 // Component that appears when a new appointment is made/updated with a patient
 
+Vue.component('modal', {
+    template: '#modal-template',
+    methods:{
+        newAppointmentSlot:function(){
+            var data = document.getElementById('timeInput').value
+            socket.emit("newAppointmentSlot",data);
+        }
+    }
+})
+
+
 
 var vm = new Vue({
     el: '#vue-instance',
     data: {
         inventory: [
-        ]
+        ],
     },
     created: function () {
 
@@ -39,12 +50,11 @@ var vm = new Vue({
 
         socket.on('updateRecordsResults',function(data){
             if(data.old_val == null){
-                if(data.new_val.patient!=null) {
                     vm.inventory.push({
                         time: data.new_val.time,
                         id: data.new_val.id,
                         patient:data.new_val.patient});
-                }
+
             }
 
             // if an existing appointment is deleted
@@ -59,6 +69,14 @@ var vm = new Vue({
 
         }
 });
+
+
+var modalvm = new Vue({
+    el: '#app',
+    data: {
+        showModal: false
+    }
+})
 
 
 

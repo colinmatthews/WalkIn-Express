@@ -116,6 +116,23 @@ io.on("connection",function(socket) {
         });
     });
 
+    socket.on("newAppointmentSlot",function (appointmentTime) {
+        r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').insert({
+                "doctor": "75873b43-51b8-4614-9603-a2ac74e81c0d",
+                "patient": "null",
+                "time": appointmentTime,
+                "viewed": false
+                }).run(rconnection, function (err, cursor) {
+                    if (err) throw err;
+                    console.log("NEW APPOINTMENT MADE " + cursor);
+                });
+        });
+
+    });
+
 });
 
 console.log("App listening on port" + port);

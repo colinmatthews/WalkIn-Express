@@ -93,12 +93,7 @@
             <div class="col-lg-12">
                 <div style="padding-top: 25px;">
                     <!-- Modal Code -->
-                    <div id="app">
-                        <button id="show-modal" @click="showModal = true"class="btn btn-primary">Add new appointment slot</button>
-                        <!-- use the modal component, pass in the prop -->
-                        <modal v-if="showModal" @close="showModal = false"></modal>
 
-                    </div>
                 </div>
                 <h1 class="page-header"></h1>
 
@@ -106,8 +101,10 @@
             <!-- /.col-lg-12 -->
             <div class="col-lg-12">
                 <!-- Appointment code -->
+
                 <div id="vue-instance">
-                    <appointment v-for="item in inventory" v-bind:item="item"></appointment>
+                    <appointment v-for="item in inventory" v-bind:item="item">
+                    </appointment>
                 </div>
 
                 <!-- /.col-lg-4 -->
@@ -125,70 +122,57 @@
 
 <!-- Template for new appointments -->
 <template id="appointment">
+
     <div>
         <div class="list-group">
             <div class="list-group-item clearfix">
                 <p>{{ item.displayTime }}</p>
-                <span class="pull-right">
-                    <button class="btn btn-xs btn-warning" v-on:click="deleteAppointment(item.id)">
 
-                        <span class="glyphicon glyphicon-trash"></span>
-                    </button>
-                </span>
+                <button  data-toggle="collapse" data-target="#demo" style="float: right" class="btn btn-danger">Book Appointment</button>
             </div>
         </div>
     </div>
-</template>
 
+    <div id="demo" class="collapse">
 
-<template id="modal-template">
-    <transition name="modal">
-        <div class="modal-mask">
-            <div class="modal-wrapper">
-                <div class="modal-container">
-
-                    <div class="modal-header">
-                        <div name="header">
-                            <h3>Add New Appointment Slot</h3>
-                        </div>
-                    </div>
-
-                        <div class="modal-body">
-                            <div name="body">
-
-                                    <div class="form-group">
-                                        <label for="timeInput">Appointment Time</label>
-                                        <input type="text" class="form-control" id="timeInput" placeholder="Enter time (Ex. 9 )">
-                                    </div>
-
-
-                                <div class="form-group">
-                                    <label for="sel1">Select period:</label>
-                                    <select class="form-control" id="sel1">
-                                        <option>AM</option>
-                                        <option>PM</option>
-                                    </select>
-                                </div>
-
-
-
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <div name="footer">
-                                <button class="btn btn-danger" style="float:left;" @click="$emit('close')">Close without saving</button>
-                                <button class="btn btn-primary" style="float:right;" v-on:click="newAppointmentSlot()" @click="$emit('close')">Save</button>
-                            </div>
-                        </div>
-
-                </div>
-            </div>
+        <div class="form-group">
+            <label for="nameInput">Name</label>
+            <input type="text" class="form-control" id="nameInput" placeholder="Enter your full name:">
         </div>
-    </transition>
+
+        <div class="form-group">
+            <label for="hcInput">Health Card</label>
+            <input type="text" class="form-control" id="hcInput" placeholder="Enter your health card number:">
+        </div>
+
+        <div class="form-group">
+            <label for="phoneInput">Phone Number</label>
+            <input type="text" class="form-control" id="phoneInput" placeholder="Enter your phone number:">
+        </div>
+
+        <div class="form-group">
+            <label for="addressInput">Address</label>
+            <input type="text" class="form-control" id="addressInput" placeholder="Enter your address name:">
+        </div>
+
+        <div class="form-group" style="padding-bottom: 30px;">
+            <label for="dobInput">Date of Birth</label>
+            <input type="text" class="form-control" id="dobInput" placeholder="Enter your date of birth:">
+            <button class="btn btn-primary" style="float:right;" v-on:click="bookAppointment(item.id)" data-toggle="collapse" data-target="#demo">Save</button>
+        </div>
+
+
+    </div>
+
+
+
+
 </template>
+
+
+
 
 
 
 <script src="http://cdn.jsdelivr.net/vue/1.0.16/vue.js"></script>
-<script src="/public/js/set.js"></script>
+<script src="/public/js/patientView.js"></script>

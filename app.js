@@ -17,9 +17,18 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 
+app.get('/patientview', function (req, res) {
+    res.sendFile(__dirname + '/views/patientView.html');
+});
+
 app.get('/set', function (req, res) {
     res.sendFile(__dirname + '/views/set.html');
 });
+
+app.get('/dayview', function (req, res) {
+    res.sendFile(__dirname + '/views/dayview.html');
+});
+
 
 var dbConfig = {
     host: 'rethinkdb.southcentralus.cloudapp.azure.com',
@@ -46,6 +55,7 @@ io.on("connection",function(socket) {
 
         });
     });
+
 
     socket.on("updateRecords", function () {
         r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
@@ -137,7 +147,7 @@ io.on("connection",function(socket) {
             }
             r.table('appointments').insert({
                 "doctor": "75873b43-51b8-4614-9603-a2ac74e81c0d",
-                "patient": "null",
+                "patient": null,
                 "time": appointmentTime,
                 "viewed": false,
                 "displayTime":displayTime
@@ -148,6 +158,42 @@ io.on("connection",function(socket) {
         });
 
     });
+
+    socket.on("createPatient",function (data) {
+        r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('patients').insert({
+                "DOB": data.DOB,
+                "address":  data.address,
+                "doctor_id": data.doctor_id,
+                "healthcard":  data.healthcard,
+                "name":  data.name,
+                "phone":  data.phone
+            }).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                console.log("NEW PATIENT MADE ");
+                var id = cursor.generated_keys[0];
+                socket.emit("newPatientID",id);
+                console.log(id);
+
+            });
+        });
+
+    });
+
+    socket.on("assignAppointment",function (patientID,appointmentID) {
+        r.connect({host: dbConfig.host, port: dbConfig.port}, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').get(appointmentID).update({patient:patientID}).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                console.log("UPDATE APPOINTMENT VIEWED "+cursor);
+            });
+        });
+
+    });
+
 
 });
 

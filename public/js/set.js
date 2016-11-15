@@ -33,7 +33,7 @@ Vue.component('modal', {
             socket.emit("newAppointmentSlot",time);
         }
     }
-})
+});
 
 
 
@@ -86,7 +86,7 @@ var modalvm = new Vue({
     data: {
         showModal: false
     }
-})
+});
 
 
 

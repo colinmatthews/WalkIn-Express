@@ -3,7 +3,7 @@
  */
 
 var socket = io.connect();
-socket.emit("getInitialAppointments");
+//socket.emit("getInitialAppointments");
 
 Vue.component('schedule',{
     props:['item'],

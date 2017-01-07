@@ -2,7 +2,7 @@
  * Created by colin on 11/8/2016.
  */
 var socket = io.connect();
-socket.emit("getInitialAppointments");
+//socket.emit("getInitialAppointments");
 // Triggers event in app.js to get initial data from the database.
 
 Vue.component('appointment',{

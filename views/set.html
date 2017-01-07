@@ -24,6 +24,8 @@
     <link rel="stylesheet" href="/public/css/modal.css">
     <link rel="stylesheet" href ="/public/css/dashboard.css">
 
+    <link rel="stylesheet" href ="/public/css/set.css">
+
 
 
 </head>
@@ -89,7 +91,7 @@
     <div id="page-wrapper">
         <div class="row">
             <div class="col-lg-12">
-                <div style="padding-top: 25px;">
+                <div class="addButton-padding">
                     <!-- Modal Code -->
                     <div id="app">
                         <button id="show-modal" @click="showModal = true"class="btn btn-primary">Add new appointment slot</button>
@@ -174,9 +176,9 @@
                         </div>
 
                         <div class="modal-footer">
-                            <div name="footer">
-                                <button class="btn btn-danger" style="float:left;" @click="$emit('close')">Close without saving</button>
-                                <button class="btn btn-primary" style="float:right;" v-on:click="newAppointmentSlot()" @click="$emit('close')">Save</button>
+                            <div id="footer">
+                                <button class="btn btn-danger" @click="$emit('close')">Close without saving</button>
+                                <button class="btn btn-primary" v-on:click="newAppointmentSlot()" @click="$emit('close')">Save</button>
                             </div>
                         </div>
 

@@ -1,0 +1,11 @@
+#footer .btn-danger{
+    float:left;
+}
+
+#footer .btn-primary{
+    float:right;
+}
+
+.addButton-padding{
+    padding-top: 25px;
+}

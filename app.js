@@ -17,6 +17,10 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 
+app.get('/dashboard', function (req, res) {
+    res.sendFile(__dirname + '/views/dashboard.html');
+});
+
 app.get('/patientview', function (req, res) {
     res.sendFile(__dirname + '/views/patientView.html');
 });

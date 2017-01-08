@@ -1,140 +1,26 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-
-    <script src="/socket.io/socket.io.js"></script>
-    <script
-    src="https://code.jquery.com/jquery-1.12.4.js"
-    integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
-    crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.common.js"></script>
-
-    <!-- Bootstrap Core CSS -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/css/sb-admin-2.css" />
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.5.2/metisMenu.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/js/sb-admin-2.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
-
-    <link rel="stylesheet" href ="/public/css/dashboard.css">
-    <link rel="stylesheet" href ="/public/css/index.css">
-
-
-
 </head>
-
-
 <body>
-<div id="wrapper">
-    <!-- Navigation -->
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-        <!-- Brand and toggle get grouped for better mobile display -->
-        <div class="navbar-header">
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="#">
-                <img src="/public/img/logo.png" alt="LOGO"">
-            </a>
-        </div>
-        <!-- Top Menu Items -->
-        <ul class="nav navbar-right top-nav">
 
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <b class="fa fa-angle-down"></b></a>
-                <ul class="dropdown-menu dropdown-menu-right">
-                    <li><a href="#"><i class="fa fa-fw fa-user"></i> Edit Profile</a></li>
-                    <li><a href="#"><i class="fa fa-fw fa-cog"></i> Change Password</a></li>
-                    <li class="divider"></li>
-                    <li><a href="#"><i class="fa fa-fw fa-power-off"></i> Logout</a></li>
+<ul >
+    <li>
+        <a href="/dashboard">DASHBOARD</a>
+    </li>
+    <li>
+        <a href="/set">SCHEDULE</a>
+    </li>
+    <li>
+        <a href="/dayview">REPORTS</a>
+    </li>
 
-                </ul>
-            </li>
-        </ul>
+    <li>
+        <a href="/patientView">PATIENT VIEW</a>
+    </li>
+</ul>
 
-
-        <div class="extra-topnav"></div>
-
-        <div class="red-bar"></div>
-
-        <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
-        <div class="collapse navbar-collapse navbar-ex1-collapse">
-            <ul class="nav navbar-nav side-nav">
-                <li>
-                    <a href="/"><i class="fa fa-fw fa fa-tachometer" aria-hidden="true"></i>DASHBOARD</a>
-                </li>
-                <li>
-                    <a href="/set"><i class="fa fa-fw fa fa fa-calendar" aria-hidden="true"></i>SCHEDULE</a>
-                </li>
-                <li>
-                    <a href="/dayview"><i class="fa fa-fw fa fa fa-line-chart" aria-hidden="true"></i>REPORTS</a>
-                </li>
-
-                <li>
-                    <a href="/patientView"><i class="fa fa-fw fa fa fa-line-chart" aria-hidden="true"></i>PATIENT VIEW</a>
-                </li>
-            </ul>
-        </div>
-        <!-- /.navbar-collapse -->
-    </nav>
-
-
-    <!-- Main Page -->
-
-    <div id="page-wrapper">
-        <div class="container-fluid">
-            <!-- Page Heading -->
-
-            <! -- Anchor for Vue Instance -->
-            <div id="vue-instance">
-                <new-appt v-for="item in inventory" v-bind:item="item"></new-appt>
-                <div v-if="inventory[0] == null">
-                    <b id="noBookings">No current bookings!</b>
-                </div>
-            </div>
-            <!-- /.row -->
-        </div>
-        <!-- /.container-fluid -->
-    </div>
-    <!-- /#page-wrapper -->
-</div><!-- /#wrapper -->
 </body>
-
-
-
-<!-- Template for new appointments -->
-<template id="new-appt">
-    <div class="panel panel-yellow" id="newPanel">
-        <div class="panel-heading">
-            <div class="row">
-                <div class="col-sm-10">New Patient</div>
-                <div class="col-sm-2">{{ item.displayTime }}</div>
-            </div>
-
-
-        </div>
-        <div class="panel-body">
-            <p> {{ item.name }}</p>
-            <p> {{ item.healthcard }}</p>
-            <p> {{ item.DOB }}</p>
-            <p> {{ item.phone }}</p>
-            <p> {{ item.address }}</p>
-
-        </div>
-        <div class="panel-footer">
-            <button type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()" v-on:click="setViewed(item.id)">Dismiss</button>
-
-        </div>
-    </div>
-</template>
-
-
-<script src="http://cdn.jsdelivr.net/vue/1.0.16/vue.js"></script>
-<script src="/public/js/index.js"></script>
+</html>

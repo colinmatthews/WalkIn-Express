@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<head xmlns:v-on="http://www.w3.org/1999/xhtml" xmlns:v-on="http://www.w3.org/1999/xhtml">
+<head>
     <meta charset="UTF-8">
     <title>Title</title>
 
     <script src="/socket.io/socket.io.js"></script>
     <script
-            src="https://code.jquery.com/jquery-1.12.4.js"
-            integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
-            crossorigin="anonymous"></script>
+    src="https://code.jquery.com/jquery-1.12.4.js"
+    integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+    crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.common.js"></script>
 
     <!-- Bootstrap Core CSS -->
@@ -18,21 +18,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/css/sb-admin-2.css" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/metisMenu/2.5.2/metisMenu.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/startbootstrap-sb-admin-2/3.3.7+1/js/sb-admin-2.js"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <link rel="stylesheet" href="/public/css/modal.css">
     <link rel="stylesheet" href ="/public/css/base.css">
-
-    <link rel="stylesheet" href ="/public/css/set.css">
+    <link rel="stylesheet" href ="/public/css/dashboard.css">
 
 
 
 </head>
 
+
 <body>
 <div id="wrapper">
-
     <!-- Navigation -->
     <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <!-- Brand and toggle get grouped for better mobile display -->
@@ -43,7 +40,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/dashboard">
+            <a class="navbar-brand" href="#">
                 <img src="/public/img/logo.png" alt="LOGO"">
             </a>
         </div>
@@ -88,107 +85,56 @@
         <!-- /.navbar-collapse -->
     </nav>
 
+
+    <!-- Main Page -->
+
     <div id="page-wrapper">
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="addButton-padding">
-                    <!-- Modal Code -->
-                    <div id="app">
-                        <button id="show-modal" @click="showModal = true"class="btn btn-primary">Add new appointment slot</button>
-                        <!-- use the modal component, pass in the prop -->
-                        <modal v-if="showModal" @close="showModal = false"></modal>
+        <div class="container-fluid">
+            <!-- Page Heading -->
 
-                    </div>
+            <! -- Anchor for Vue Instance -->
+            <div id="vue-instance">
+                <new-appt v-for="item in inventory" v-bind:item="item"></new-appt>
+                <div v-if="inventory[0] == null">
+                    <b id="noBookings">No current bookings!</b>
                 </div>
-                <h1 class="page-header"></h1>
-
             </div>
-            <!-- /.col-lg-12 -->
-            <div class="col-lg-12">
-                <!-- Appointment code -->
-                <div id="vue-instance">
-                    <appointment v-for="item in inventory" v-bind:item="item"></appointment>
-                </div>
-
-                <!-- /.col-lg-4 -->
-            </div>
+            <!-- /.row -->
         </div>
-        <!-- /.row -->
+        <!-- /.container-fluid -->
     </div>
     <!-- /#page-wrapper -->
-
-</div>
-<!-- /#wrapper -->
+</div><!-- /#wrapper -->
 </body>
 
 
 
 <!-- Template for new appointments -->
-<template id="appointment">
-    <div>
-        <div class="list-group">
-            <div class="list-group-item clearfix">
-                <p>{{ item.displayTime }}</p>
-                <span class="pull-right">
-                    <button class="btn btn-xs btn-warning" v-on:click="deleteAppointment(item.id)">
-
-                        <span class="glyphicon glyphicon-trash"></span>
-                    </button>
-                </span>
+<template id="new-appt">
+    <div class="panel panel-yellow" id="newPanel">
+        <div class="panel-heading">
+            <div class="row">
+                <div class="col-sm-10">New Patient</div>
+                <div class="col-sm-2">{{ item.displayTime }}</div>
             </div>
+
+
+        </div>
+        <div class="panel-body">
+            <p> {{ item.name }}</p>
+            <p> {{ item.healthcard }}</p>
+            <p> {{ item.DOB }}</p>
+            <p> {{ item.phone }}</p>
+            <p> {{ item.address }}</p>
+
+        </div>
+        <div class="panel-footer">
+            <button type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()" v-on:click="setViewed(item.id)">Dismiss</button>
+
         </div>
     </div>
 </template>
 
 
-<template id="modal-template">
-    <transition name="modal">
-        <div class="modal-mask">
-            <div class="modal-wrapper">
-                <div class="modal-container">
-
-                    <div class="modal-header">
-                        <div name="header">
-                            <h3>Add New Appointment Slot</h3>
-                        </div>
-                    </div>
-
-                        <div class="modal-body">
-                            <div name="body">
-
-                                    <div class="form-group">
-                                        <label for="timeInput">Appointment Time</label>
-                                        <input type="text" class="form-control" id="timeInput" placeholder="Enter time (Ex. 9 )">
-                                    </div>
-
-
-                                <div class="form-group">
-                                    <label for="sel1">Select period:</label>
-                                    <select class="form-control" id="sel1">
-                                        <option>AM</option>
-                                        <option>PM</option>
-                                    </select>
-                                </div>
-
-
-
-                            </div>
-                        </div>
-
-                        <div class="modal-footer">
-                            <div id="footer">
-                                <button class="btn btn-danger" @click="$emit('close')">Close without saving</button>
-                                <button class="btn btn-primary" v-on:click="newAppointmentSlot()" @click="$emit('close')">Save</button>
-                            </div>
-                        </div>
-
-                </div>
-            </div>
-        </div>
-    </transition>
-</template>
-
-
-
 <script src="http://cdn.jsdelivr.net/vue/1.0.16/vue.js"></script>
-<script src="/public/js/set.js"></script>
+<script src="/public/js/index.js"></script>

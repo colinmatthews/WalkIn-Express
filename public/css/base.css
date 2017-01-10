@@ -11,7 +11,7 @@
 }
 
 #page-wrapper {
-    width: 100%;
+
     padding: 0;
     background-color: #fff;
 
@@ -88,7 +88,7 @@
     }
 
     .side-nav>li>a>i{
-        color:#EA423F;
+        color:#ffffff;
         padding-right:30px;
     }
 
@@ -124,7 +124,7 @@
         margin-left: -225px;
         border: none;
         border-radius: 0;
-        background-color: #EA423F;
+        background-color: #69c170;
     }
 
 }

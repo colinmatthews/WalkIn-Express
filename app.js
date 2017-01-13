@@ -8,40 +8,64 @@ var io = require('socket.io')(http);
 var path = require('path');
 var r = require('rethinkdb');
 var fs = require("fs")
-
-
-
+var stormpath = require('express-stormpath');
 
 
 var port = 8000;
-http.listen(port);
 app.use("/public", express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 
-app.get('/dashboard', function (req, res) {
+app.get('/book', stormpath.loginRequired, function (req, res) {
+    res.sendFile(__dirname + '/views/book.html');
+});
+
+app.get('/dashboard',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/dashboard.html');
 });
 
-app.get('/patientview', function (req, res) {
+app.get('/patientview',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/patientView.html');
 });
 
-app.get('/set', function (req, res) {
+app.get('/set',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/set.html');
 });
 
-app.get('/dayview', function (req, res) {
+app.get('/dayview',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/dayview.html');
 });
 
+http.listen(port);
 
-var rconnection = null;
+
+
+app.use(stormpath.init(app, {
+    web: {
+        login:{
+            enabled: true,
+            nextUri: "/"
+        }
+    },
+    postLoginHandler: function (account, req, res, next) {
+        if(req.user.group == "clinics") {
+            console.log("clinic");
+        }
+    }
+
+}));
+
+
+app.on('stormpath.ready', function () {
+    console.log('Stormpath Ready!');
+});
 
 io.on("connection", function (socket) {
+    var rconnection = null;
     console.log("You connected!");
+
 
     var caCert = fs.readFileSync(__dirname + '/cacert.txt').toString().trim();
 

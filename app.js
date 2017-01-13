@@ -12,6 +12,12 @@ var stormpath = require('express-stormpath');
 
 
 var port = 8000;
+
+app.use(stormpath.init(app, {
+    website:true
+
+}));
+
 app.use("/public", express.static(__dirname + '/public'));
 
 app.get('/', function (req, res) {
@@ -40,22 +46,6 @@ app.get('/dayview',stormpath.groupsRequired(['clinics']), function (req, res) {
 
 http.listen(port);
 
-
-
-app.use(stormpath.init(app, {
-    web: {
-        login:{
-            enabled: true,
-            nextUri: "/"
-        }
-    },
-    postLoginHandler: function (account, req, res, next) {
-        if(req.user.group == "clinics") {
-            console.log("clinic");
-        }
-    }
-
-}));
 
 
 app.on('stormpath.ready', function () {

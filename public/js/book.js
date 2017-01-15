@@ -1,9 +1,25 @@
 /**
- * Created by colin on 11/8/2016.
+ * Created by colin on 1/14/2017.
  */
+
+
+function initMap() {
+    var uluru = {lat:42.296113, lng:-83.047560};
+    var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: uluru
+    });
+    var marker = new google.maps.Marker({
+        position: uluru,
+        map: map
+    });
+}
+
+
+
+// Triggers event in app.js to get initial data from the database.
 var socket = io.connect();
 socket.emit("getInitialAppointments");
-// Triggers event in app.js to get initial data from the database.
 
 Vue.component('appointment',{
     props:['item'],
@@ -26,7 +42,7 @@ Vue.component('appointment',{
             socket.on("newPatientID",function (patientID) {
                 console.log(patientID);
                 socket.emit("assignAppointment",patientID,appointmentID);
-           });
+            });
         }
     }
 });
@@ -78,9 +94,3 @@ var vm = new Vue({
 
     }
 });
-
-
-// triggers when the page is created
-/**
- * Created by colin on 11/15/2016.
- */

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="/socket.io/socket.io.js"></script>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Walk-In Express - Skip the wait at your favourite clinic!</title>
+
+
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"
+            integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+            crossorigin="anonymous"></script>
+
+
+
+
+    <!-- Bootstrap Core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+
+    <link href="../public/css/book.css" rel="stylesheet">
+
+
+    <!-- Custom Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet" type="text/css">
+
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="navbar navbar-default navbar-fixed-top topnav" role="navigation">
+    <div class="container topnav">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand topnav" href="/"><img src="/public/img/logo.png"></a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <form action="/logout" method="POST" id="logout_form">
+                <ul class="nav navbar-right top-nav">
+                    <li><a onclick="document.getElementById('logout_form').submit();"><i class="fa fa-fw fa-power-off"></i> Logout</a></li>
+                </ul>
+            </form>
+        </div>
+        <!-- /.navbar-collapse -->
+    </div>
+    <!-- /.container -->
+</nav>
+
+
+<!-- Header -->
+
+<!-- Page Content -->
+<div class="content-section-a">
+
+    <div class="container">
+        <div class="row">
+            <hr class="section-heading-spacer">
+            <div class="clearfix"></div>
+            <h2 class="section-heading">Book Your Appointment</h2>
+
+            <div id="map"></div>
+            <h4 class="section-heading" style="padding:20px;">Clinic: West Windsor Medical Clinic</h4>
+            <div id="vue-instance" style="float:left;">
+                <appointment v-for="item in inventory" v-bind:item="item"></appointment>
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+    <!-- /.container -->
+
+</div>
+
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC0MxRy96T3Hkl4btgbVrLjWDoWUt4GMug&callback=initMap"
+        async defer></script>
+
+
+<!-- Footer -->
+<footer>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <ul class="list-inline">
+                    <li>
+                        <a href="#">Home</a>
+                    </li>
+                    <li class="footer-menu-divider">&sdot;</li>
+                    <li>
+                        <a href="#about">About</a>
+                    </li>
+                    <li class="footer-menu-divider">&sdot;</li>
+                    <li>
+                        <a href="#services">Services</a>
+                    </li>
+                    <li class="footer-menu-divider">&sdot;</li>
+                    <li>
+                        <a href="#contact">Contact</a>
+                    </li>
+                    <li class="footer-menu-divider">&sdot;</li>
+                    <li>
+                        <a href="/dashboard">Clinic Dashboard</a>
+                    </li>
+                </ul>
+                <p class="copyright text-muted small">Copyright &copy; Walk-In Express 2017. All Rights Reserved</p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+</body>
+
+<script src="http://cdn.jsdelivr.net/vue/1.0.16/vue.js"></script>
+<script src="../public/js/book.js"></script>
+
+</html>
+
+
+<!-- Template for new appointments -->
+<template id="appointment">
+
+    <div>
+        <div class="list-group">
+            <div class="list-group-item clearfix">
+                <p>{{ item.displayTime }}</p>
+
+                <button  data-toggle="collapse" data-target="#demo" style="float: right" class="btn btn-danger">Book Appointment</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="demo" class="collapse">
+
+        <div class="form-group">
+            <label for="nameInput">Name</label>
+            <input type="text" class="form-control" id="nameInput" placeholder="Enter your full name:">
+        </div>
+
+        <div class="form-group">
+            <label for="hcInput">Health Card</label>
+            <input type="text" class="form-control" id="hcInput" placeholder="Enter your health card number:">
+        </div>
+
+        <div class="form-group">
+            <label for="phoneInput">Phone Number</label>
+            <input type="text" class="form-control" id="phoneInput" placeholder="Enter your phone number:">
+        </div>
+
+        <div class="form-group">
+            <label for="addressInput">Address</label>
+            <input type="text" class="form-control" id="addressInput" placeholder="Enter your address name:">
+        </div>
+
+        <div class="form-group" style="padding-bottom: 30px;">
+            <label for="dobInput">Date of Birth</label>
+            <input type="text" class="form-control" id="dobInput" placeholder="Enter your date of birth:">
+            <button class="btn btn-primary" style="float:right;" v-on:click="bookAppointment(item.id)" data-toggle="collapse" data-target="#demo">Save</button>
+        </div>
+
+
+    </div>
+
+
+
+
+</template>

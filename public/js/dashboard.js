@@ -44,11 +44,11 @@ var vm = new Vue({
                 }
             }
 
-            socket.emit("updateRecords");
+            socket.emit("updateRecordsDashboard");
         });
 
         // Listens for response from app.js for changes in appointments
-        socket.on("updateRecordsResults",function(data){
+        socket.on("updateRecordsResultsDashboard",function(data){
 
             // if a new appointment is added
             if(data.old_val == null){

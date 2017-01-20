@@ -79,7 +79,7 @@ io.on("connection", function (socket) {
 
     /*
     Called From:
-            dashboard.js, set.js
+            dashboard.js
     Function:
             Checks appointments table for a change in data
     Purpose:
@@ -88,7 +88,7 @@ io.on("connection", function (socket) {
     Context:
             Called after initRecords is called.
      */
-    socket.on("updateRecords", function () {
+    socket.on("updateRecordsDashboard", function () {
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -101,12 +101,12 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.db('WalkInExpress').table("appointments").changes().run(rconnection, function (err, cursor) {
+            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(today)).changes().run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.each(function (err, result) {
                     if (err) throw err;
                     console.log(result);
-                    socket.emit("updateRecordsResults", result);
+                    socket.emit("updateRecordsResultsDashboard", result);
                 });
             });
         });

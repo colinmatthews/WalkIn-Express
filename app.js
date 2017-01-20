@@ -49,6 +49,11 @@ app.on('stormpath.ready', function () {
 });
 
 io.on("connection", function (socket) {
+
+    var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});;
+    today = new Date(today + 'UTC');
+    console.log(today);
+
     var rconnection = null;
     console.log("You connected!");
 
@@ -221,15 +226,16 @@ io.on("connection", function (socket) {
 
     /*
      Called by:
-            set.js
+            set.js, book.js
      Function:
-            Gets initial appointment data
+            Gets initial appointment data for the current date
      Purpose:
-            Populate existing appointments
+            Populate existing appointments for the current date
      Context:
-           cCalled at the beginning of set.js
+           Called at the beginning of set.js
      */
     socket.on("getInitialAppointments", function () {
+
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -242,7 +248,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').run(rconnection, function (err, cursor) {
+            r.table('appointments').filter(r.row('timestamp').date().eq(today)).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
@@ -254,6 +260,31 @@ io.on("connection", function (socket) {
         });
     });
 
+
+    socket.on("getDateAppointments", function (date) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').filter(r.row('timestamp').date().eq(date)).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("initRecordsAppointments", result);
+                });
+            });
+
+        });
+    });
 
     /*
     Called by:
@@ -292,9 +323,9 @@ io.on("connection", function (socket) {
             creates a new appointment record
     Purpose:
             allows a user to create a new appointment time
-
      */
     socket.on("newAppointmentSlot", function (appointmentTime,date) {
+        console.log(date);
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -327,7 +358,7 @@ io.on("connection", function (socket) {
                 "time": appointmentTime,
                 "viewed": false,
                 "displayTime": displayTime,
-                timestamp: new Date(date),
+                timestamp: new Date(date+"UTC"),
             }).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 console.log("NEW APPOINTMENT MADE " + cursor);

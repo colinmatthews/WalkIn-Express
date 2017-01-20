@@ -52,6 +52,12 @@ var vm = new Vue({
         inventory: [
         ],
     },
+    methods:{
+        deleteLocalContent:function(){
+           vm.inventory.splice(0,vm.inventory.length);
+        }
+
+    },
     created: function () {
 
         socket.on("initRecordsAppointments",function(data){
@@ -103,6 +109,7 @@ function changeDate(){
     var date = document.getElementById('datepicker').value;
     document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     console.log(date);
+    vm.deleteLocalContent();
     socket.emit('getDateAppointments',date);
 }
 // creates the date picker from jquery-ui

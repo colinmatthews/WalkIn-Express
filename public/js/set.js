@@ -5,6 +5,8 @@
 document.getElementById("currentDate").innerHTML = new Date().toDateString();
 
 
+
+
 var socket = io.connect();
 socket.emit("getInitialAppointments");
 
@@ -61,10 +63,11 @@ var vm = new Vue({
                     displayTime:data[i].displayTime
                 });
             }
-            socket.emit('updateRecords');
+            var date = document.getElementById('datepicker').value;
+            socket.emit('updateRecordsSet',date);
         });
 
-        socket.on('updateRecordsResults',function(data){
+        socket.on('updateRecordsResultsSet',function(data){
             if(data.old_val == null){
                     vm.inventory.push({
                         time: data.new_val.time,
@@ -95,11 +98,14 @@ var modalvm = new Vue({
     }
 });
 
+// changes the date in the text at the top of the page
 function changeDate(){
     var date = document.getElementById('datepicker').value;
     document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
+    console.log(date);
+    socket.emit('getDateAppointments',date);
 }
-
+// creates the date picker from jquery-ui
 $( function() {
     $( "#datepicker" ).datepicker();
     $("#datepicker").datepicker('setDate', new Date());

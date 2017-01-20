@@ -264,8 +264,21 @@ io.on("connection", function (socket) {
         });
     });
 
+    /*
+     Called From:
+            set.js
+     Function:
+             Checks appointments table for a change in data for the current date
+     Purpose:
+            Used to check if any appointment data has changed,specifically looks for changes in
+            the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
+     Context:
+            Called after getInitialPatients is called.
+     */
+    socket.on("updateRecordsSet", function (date) {
+        var checkDate = new Date(date +'UTC');
+        console.log(checkDate);
 
-    socket.on("getDateAppointments", function (date) {
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -278,7 +291,37 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').filter(r.row('timestamp').date().eq(date)).run(rconnection, function (err, cursor) {
+            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
+                console.log('here');
+                if (err) throw err;
+                cursor.each(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("updateRecordsResultsSet", result);
+                });
+            });
+        });
+    });
+
+
+
+    socket.on("getDateAppointments", function (date) {
+
+        var checkDate = new Date(date +'UTC');
+
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;

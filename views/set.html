@@ -21,6 +21,11 @@
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
+
+    <link rel="stylesheet" href="../public/external/jquery-ui-1.12.1/jquery-ui.css">
+    <script type="text/javascript" src="../public/external/jquery-ui-1.12.1/jquery-ui.js"></script>
+
+
     <link rel="stylesheet" href="/public/css/modal.css">
     <link rel="stylesheet" href ="/public/css/base.css">
 
@@ -48,19 +53,11 @@
             </a>
         </div>
         <!-- Top Menu Items -->
-        <ul class="nav navbar-right top-nav">
-
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown"> <b class="fa fa-angle-down"></b></a>
-                <ul class="dropdown-menu dropdown-menu-right">
-                    <li><a href="#"><i class="fa fa-fw fa-user"></i> Edit Profile</a></li>
-                    <li><a href="#"><i class="fa fa-fw fa-cog"></i> Change Password</a></li>
-                    <li class="divider"></li>
-                    <li><a href="#"><i class="fa fa-fw fa-power-off"></i> Logout</a></li>
-
-                </ul>
-            </li>
-        </ul>
+        <form action="/logout" method="POST" id="logout_form">
+            <ul class="nav navbar-right top-nav">
+                <li><a onclick="document.getElementById('logout_form').submit();"><i class="fa fa-fw fa-power-off"></i> Logout</a></li>
+            </ul>
+        </form>
 
 
         <div class="extra-topnav"></div>
@@ -79,10 +76,6 @@
                 <li>
                     <a href="/dayview"><i class="fa fa-fw fa fa fa-line-chart" aria-hidden="true"></i>REPORTS</a>
                 </li>
-
-                <li>
-                    <a href="/patientView"><i class="fa fa-fw fa fa fa-line-chart" aria-hidden="true"></i>PATIENT VIEW</a>
-                </li>
             </ul>
         </div>
         <!-- /.navbar-collapse -->
@@ -90,7 +83,7 @@
 
     <div id="page-wrapper">
         <div class="row">
-            <div class="col-lg-12">
+            <div class="col-lg-6">
                 <div class="addButton-padding">
                     <!-- Modal Code -->
                     <div id="app">
@@ -100,15 +93,32 @@
 
                     </div>
                 </div>
-                <h1 class="page-header"></h1>
 
+
+            </div>
+            <div class="col-lg-6">
+                <div class="selectDate" style="float:right;padding-top: 15px;">
+                    <p>Date: <input type="text" id="datepicker"></p>
+                    <button class="btn btn-default" style="float: right" onclick="changeDate()">Change Date</button>
+                </div>
+            </div>
+
+
+            <div class="col-lg-12">
+                <h3 id="currentDate" style="text-align: center;padding-bottom: 5px;"></h3>
             </div>
             <!-- /.col-lg-12 -->
             <div class="col-lg-12">
+                <h1 class="page-header"></h1>
                 <!-- Appointment code -->
                 <div id="vue-instance">
                     <appointment v-for="item in inventory" v-bind:item="item"></appointment>
                 </div>
+
+
+
+
+
 
                 <!-- /.col-lg-4 -->
             </div>
@@ -120,7 +130,6 @@
 </div>
 <!-- /#wrapper -->
 </body>
-
 
 
 <!-- Template for new appointments -->
@@ -169,7 +178,6 @@
                                         <option>PM</option>
                                     </select>
                                 </div>
-
 
 
                             </div>

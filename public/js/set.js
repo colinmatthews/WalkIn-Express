@@ -1,8 +1,22 @@
 /**
  * Created by colin on 11/8/2016.
  */
+
+function changeDate(){
+    var date = document.getElementById('datepicker').value;
+    document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
+}
+
+$( function() {
+    $( "#datepicker" ).datepicker();
+    $("#datepicker").datepicker('setDate', new Date());
+
+} (jQuery));
+
+document.getElementById("currentDate").innerHTML = new Date().toDateString();
 var socket = io.connect();
 socket.emit("getInitialAppointments");
+
 // Triggers event in app.js to get initial data from the database.
 
 Vue.component('appointment',{
@@ -23,6 +37,7 @@ Vue.component('modal', {
         newAppointmentSlot:function(){
             var time = parseInt(document.getElementById('timeInput').value);
             var zone = document.getElementById('sel1').value;
+            var date = document.getElementById('datepicker').value;
             if(zone == "PM" && time != 12){
 
                 time = time + 12;
@@ -30,7 +45,8 @@ Vue.component('modal', {
             if(zone == "AM" && time == 12 ){
                 time=time +12;
             }
-            socket.emit("newAppointmentSlot",time);
+            console.log(date);
+            socket.emit("newAppointmentSlot",time,date);
         }
     }
 });
@@ -87,6 +103,7 @@ var modalvm = new Vue({
         showModal: false
     }
 });
+
 
 
 

@@ -1,7 +1,10 @@
 # Vue-Dashboard
 
 Version 1.0.0 Checklist
-Dashboard:
+
+
+<b>Dashboard:</b>
+
 1) Integrate dates into rethinkdb
 
 2) Integrate dates into client
@@ -19,7 +22,8 @@ Dashboard:
 8) Allow clinic to confirm or deny appointments via popup
 
 
-Site:
+<b>Site:</b>
+
 1) Update social banner
 
 2) Add an about us/ contact us
@@ -28,6 +32,7 @@ Site:
 
 4) Change confirmation email contents
 
-Booking:
 
-1)Change drop down form to modal
+<b>Booking:</b>
+
+1) Change drop down form to modal

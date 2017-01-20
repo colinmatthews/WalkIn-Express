@@ -3,7 +3,7 @@
  */
 
 var socket = io.connect();
-socket.emit("getInitial");
+socket.emit("getInitialPatients");
 // Triggers event in app.js to get initial data from the database.
 
 Vue.component('new-appt',{

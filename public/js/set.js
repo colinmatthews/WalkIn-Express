@@ -1,19 +1,10 @@
 /**
  * Created by colin on 11/8/2016.
  */
-
-function changeDate(){
-    var date = document.getElementById('datepicker').value;
-    document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
-}
-
-$( function() {
-    $( "#datepicker" ).datepicker();
-    $("#datepicker").datepicker('setDate', new Date());
-
-} (jQuery));
-
+// Sets the date text at the top of the page to the current date
 document.getElementById("currentDate").innerHTML = new Date().toDateString();
+
+
 var socket = io.connect();
 socket.emit("getInitialAppointments");
 
@@ -103,6 +94,17 @@ var modalvm = new Vue({
         showModal: false
     }
 });
+
+function changeDate(){
+    var date = document.getElementById('datepicker').value;
+    document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
+}
+
+$( function() {
+    $( "#datepicker" ).datepicker();
+    $("#datepicker").datepicker('setDate', new Date());
+
+} (jQuery));
 
 
 

@@ -81,12 +81,12 @@ io.on("connection", function (socket) {
     Called From:
             dashboard.js
     Function:
-            Checks appointments table for a change in data
+            Checks appointments table for a change in data for the current date
     Purpose:
             Used to check if any appointment data has changed,specifically looks for changes in
             the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
     Context:
-            Called after initRecords is called.
+            Called after getInitialPatients is called.
      */
     socket.on("updateRecordsDashboard", function () {
         r.connect({
@@ -204,7 +204,11 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').eqJoin('patient', r.table('patients')).without({"right": {"id": true}}).zip().filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
+            // today's appointments that have patients that have not been viewed
+            r.table('appointments').filter(r.row('timestamp').date().eq(today)).eqJoin
+                ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
+                .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
+
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;

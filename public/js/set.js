@@ -1,15 +1,15 @@
 /**
  * Created by colin on 11/8/2016.
  */
-// Sets the date text at the top of the page to the current date
+// initialize dates
 document.getElementById("currentDate").innerHTML = new Date().toDateString();
-
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+
+// connect to app.js, get today's appointments
 var socket = io.connect();
 socket.emit("getDateAppointments",today);
 
-// Triggers event in app.js to get initial data from the database.
-
+// Component that appears when a new appointment is made/updated with a patient
 Vue.component('appointment',{
     props:['item'],
     template:'#appointment',
@@ -20,8 +20,9 @@ Vue.component('appointment',{
         }
     }
 });
-// Component that appears when a new appointment is made/updated with a patient
 
+
+// modal for adding appointments
 Vue.component('modal', {
     template: '#modal-template',
     methods:{
@@ -48,7 +49,7 @@ var vm = new Vue({
     el: '#vue-instance',
     data: {
         inventory: [
-        ],
+        ]
     },
     methods:{
         deleteLocalContent:function(){
@@ -103,15 +104,16 @@ var modalvm = new Vue({
     }
 });
 
-// changes the date in the text at the top of the page
+// Changes the current date, called by 'Change Date button
 function changeDate(){
+    socket.emit("closeCursor");
     var date = document.getElementById('datepicker').value;
     document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     console.log(date);
     vm.deleteLocalContent();
     socket.emit('getDateAppointments',date);
 }
-// creates the date picker from jquery-ui
+// creates the date picker from jquery-ui and populates with today's date
 $( function() {
     $( "#datepicker" ).datepicker();
     $("#datepicker").datepicker('setDate', new Date());

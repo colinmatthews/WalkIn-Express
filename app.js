@@ -55,6 +55,7 @@ io.on("connection", function (socket) {
     console.log(today);
 
     var rconnection = null;
+    var myCursor = null;
     console.log("You connected!");
 
 
@@ -228,7 +229,6 @@ io.on("connection", function (socket) {
     //*********************************
 
 
-
     /*
      Called From:
             set.js
@@ -259,13 +259,29 @@ io.on("connection", function (socket) {
             r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
                 console.log('here');
                 if (err) throw err;
-                cursor.each(function (err, result) {
+                myCursor=cursor;
+                myCursor.each(function (err, result) {
                     if (err) throw err;
-                    console.log(result);
+                    console.log(" ***** " + result);
                     socket.emit("updateRecordsResultsSet", result);
+
                 });
             });
         });
+    });
+
+    /*
+    Called by:
+            set.js
+    Function:
+            Closes the current cursor
+    Purpose:
+            Used to close the changes query when changing dates, so that there is only ever one changefeed at a time
+            and that changefeed is set to the date the user is current working with
+
+     */
+    socket.on("closeCursor", function () {
+       myCursor.close();
     });
 
 
@@ -297,6 +313,8 @@ io.on("connection", function (socket) {
 
         });
     });
+
+
 
     /*
     Called by:

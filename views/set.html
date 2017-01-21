@@ -134,8 +134,21 @@
 
 <!-- Template for new appointments -->
 <template id="appointment">
-    <div>
-        <div class="list-group">
+
+
+        <div v-if ="item.patient != null" class="list-group">
+            <div class="list-group-item clearfix" style="background-color: rgba(185,37,24,0.46)">
+                <p>{{ item.displayTime }}</p>
+                <span class="pull-right">
+                    <button class="btn btn-xs btn-warning" v-on:click="deleteAppointment(item.id)">
+
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+
+        <div v-else class="list-group">
             <div class="list-group-item clearfix">
                 <p>{{ item.displayTime }}</p>
                 <span class="pull-right">
@@ -146,7 +159,7 @@
                 </span>
             </div>
         </div>
-    </div>
+
 </template>
 
 

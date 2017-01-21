@@ -15,11 +15,11 @@ function initMap() {
     });
 }
 
-
+var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 
 // Triggers event in app.js to get initial data from the database.
 var socket = io.connect();
-socket.emit("getInitialAppointments");
+socket.emit("getDateAppointments",today);
 
 Vue.component('appointment',{
     props:['item'],

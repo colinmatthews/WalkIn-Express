@@ -281,7 +281,7 @@ io.on("connection", function (socket) {
 
      */
     socket.on("closeCursor", function () {
-       myCursor.close();
+       console.log(myCursor.close());
     });
 
 

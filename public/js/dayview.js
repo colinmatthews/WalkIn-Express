@@ -2,8 +2,10 @@
  * Created by colin on 11/15/2016.
  */
 
+var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+
 var socket = io.connect();
-socket.emit("getInitialAppointments");
+socket.emit("getDateAppointments",today);
 
 Vue.component('schedule',{
     props:['item'],
@@ -47,10 +49,10 @@ var vm = new Vue({
                 console.log(vm.inventory[j]);
             }
 
-            socket.emit('updateRecords');
+            socket.emit('updateRecordsDashboard');
         });
 
-        socket.on('updateRecordsResults',function(data){
+        socket.on('updateRecordsResultsDashboard',function(data){
             if(data.old_val == null){
                 vm.inventory.push({
                     time: data.new_val.time,

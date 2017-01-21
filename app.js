@@ -228,41 +228,6 @@ io.on("connection", function (socket) {
     //*********************************
 
 
-    /*
-     Called by:
-            set.js, book.js
-     Function:
-            Gets initial appointment data for the current date
-     Purpose:
-            Populate existing appointments for the current date
-     Context:
-           Called at the beginning of set.js
-     */
-    socket.on("getInitialAppointments", function () {
-
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table('appointments').filter(r.row('timestamp').date().eq(today)).run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("initRecordsAppointments", result);
-                });
-            });
-
-        });
-    });
 
     /*
      Called From:
@@ -308,7 +273,7 @@ io.on("connection", function (socket) {
     socket.on("getDateAppointments", function (date) {
 
         var checkDate = new Date(date +'UTC');
-
+        console.log(checkDate);
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,

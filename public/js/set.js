@@ -4,11 +4,9 @@
 // Sets the date text at the top of the page to the current date
 document.getElementById("currentDate").innerHTML = new Date().toDateString();
 
-
-
-
+var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 var socket = io.connect();
-socket.emit("getInitialAppointments");
+socket.emit("getDateAppointments",today);
 
 // Triggers event in app.js to get initial data from the database.
 
@@ -70,6 +68,7 @@ var vm = new Vue({
                 });
             }
             var date = document.getElementById('datepicker').value;
+            console.log("init " +date);
             socket.emit('updateRecordsSet',date);
         });
 

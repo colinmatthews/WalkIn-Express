@@ -9,47 +9,33 @@ var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'nu
 var socket = io.connect();
 socket.emit("getDateAppointments",today);
 
+
+var patientmodal = {
+    props: ['item', 'showModal'],
+    template: '#patientmodal-template'
+};
+
 // Component that appears when a new appointment is made/updated with a patient
 Vue.component('appointment',{
-    props:['item'],
+    props:['item','showModal'],
     template:'#appointment',
     methods:{
         deleteAppointment:function(data){
             console.log(data);
             socket.emit("deleteAppointment",data);
         }
+    },
+    components:{
+        'patientmodal':patientmodal
     }
 });
-
-
-// modal for adding appointments
-Vue.component('modal', {
-    template: '#modal-template',
-    methods:{
-        newAppointmentSlot:function(){
-            var time = parseInt(document.getElementById('timeInput').value);
-            var zone = document.getElementById('sel1').value;
-            var date = document.getElementById('datepicker').value;
-            if(zone == "PM" && time != 12){
-
-                time = time + 12;
-            }
-            if(zone == "AM" && time == 12 ){
-                time=time +12;
-            }
-            console.log(date);
-            socket.emit("newAppointmentSlot",time,date);
-        }
-    }
-});
-
-
 
 var vm = new Vue({
     el: '#vue-instance',
     data: {
         inventory: [
-        ]
+        ],
+        showModal:false
     },
     methods:{
         deleteLocalContent:function(){
@@ -67,6 +53,7 @@ var vm = new Vue({
                     patient:data[i].patient,
                     displayTime:data[i].displayTime
                 });
+
             }
             var date = document.getElementById('datepicker').value;
             console.log("init " +date);
@@ -96,6 +83,27 @@ var vm = new Vue({
         }
 });
 
+// modal for adding appointments
+Vue.component('modal', {
+    template: '#modal-template',
+    methods:{
+        newAppointmentSlot:function(){
+            var time = parseInt(document.getElementById('timeInput').value);
+            var zone = document.getElementById('sel1').value;
+            var date = document.getElementById('datepicker').value;
+            if(zone == "PM" && time != 12){
+
+                time = time + 12;
+            }
+            if(zone == "AM" && time == 12 ){
+                time=time +12;
+            }
+            console.log(date);
+            socket.emit("newAppointmentSlot",time,date);
+        }
+    }
+});
+
 
 var modalvm = new Vue({
     el: '#app',
@@ -103,6 +111,7 @@ var modalvm = new Vue({
         showModal: false
     }
 });
+
 
 // Changes the current date, called by 'Change Date button
 function changeDate(){
@@ -119,7 +128,6 @@ $( function() {
     $("#datepicker").datepicker('setDate', new Date());
 
 } (jQuery));
-
 
 
 

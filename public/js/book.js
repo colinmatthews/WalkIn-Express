@@ -3,30 +3,18 @@
  */
 
 
-function initMap() {
-    var uluru = {lat:42.296113, lng:-83.047560};
-    var map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 13,
-        center: uluru
-    });
-    var marker = new google.maps.Marker({
-        position: uluru,
-        map: map
-    });
-}
-
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 
 // Triggers event in app.js to get initial data from the database.
 var socket = io.connect();
 socket.emit("getDateAppointments",today);
 
-Vue.component('appointment',{
-    props:['item'],
-    template:'#appointment',
+var modal = {
+    props:['item','showModal'],
+    template: '#modal-template',
     methods:{
         bookAppointment:function(appointmentID){
-
+            console.log("here");
             var data={
                 "DOB":  document.getElementById("dobInput").value ,
                 "address":  document.getElementById("addressInput").value,
@@ -34,10 +22,7 @@ Vue.component('appointment',{
                 "healthcard":  document.getElementById("hcInput").value ,
                 "name":  document.getElementById("nameInput").value ,
                 "phone":  document.getElementById("phoneInput").value
-            }
-
-
-
+            };
             socket.emit("createPatient",data);
             socket.on("newPatientID",function (patientID) {
                 console.log(patientID);
@@ -45,16 +30,24 @@ Vue.component('appointment',{
             });
         }
     }
+};
+
+Vue.component('appointment',{
+    props:['item','showModal'],
+    template:'#appointment',
+    components:{
+      'modal':modal
+    }
 });
 // Component that appears when a new appointment is made/updated with a patient
-
 
 
 var vm = new Vue({
     el: '#vue-instance',
     data: {
         inventory: [
-        ]
+        ],
+        showModal: false
     },
     created: function () {
 
@@ -94,3 +87,15 @@ var vm = new Vue({
 
     }
 });
+
+function initMap() {
+    var uluru = {lat:42.296113, lng:-83.047560};
+    var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: uluru
+    });
+    var marker = new google.maps.Marker({
+        position: uluru,
+        map: map
+    });
+}

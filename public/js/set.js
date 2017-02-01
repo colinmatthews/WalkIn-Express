@@ -9,15 +9,27 @@ var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'nu
 var socket = io.connect();
 socket.emit("getDateAppointments",today);
 
+var confirmmodal = {
+    props: ['item', 'showModal2'],
+    template: '#confirmmodal-template',
+    methods:{
+        deleteAppointment:function(data){
+            console.log(data);
+            socket.emit("deleteAppointment",data);
+        }
+    },
+};
+
 
 var patientmodal = {
     props: ['item', 'showModal'],
-    template: '#patientmodal-template'
+    template: '#patientmodal-template',
+
 };
 
 // Component that appears when a new appointment is made/updated with a patient
 Vue.component('appointment',{
-    props:['item','showModal'],
+    props:['item','showModal','showModal2'],
     template:'#appointment',
     methods:{
         deleteAppointment:function(data){
@@ -26,7 +38,8 @@ Vue.component('appointment',{
         }
     },
     components:{
-        'patientmodal':patientmodal
+        'patientmodal':patientmodal,
+        'confirmmodal':confirmmodal
     }
 });
 
@@ -35,7 +48,8 @@ var vm = new Vue({
     data: {
         inventory: [
         ],
-        showModal:false
+        showModal:false,
+        showModal2:false
     },
     methods:{
         deleteLocalContent:function(){
@@ -47,14 +61,44 @@ var vm = new Vue({
 
         socket.on("initRecordsAppointments",function(data){
             for (var i = 0; i < data.length; i++) {
-                vm.inventory.push({
-                    time:data[i].time,
-                    id:data[i].id,
-                    patient:data[i].patient,
-                    displayTime:data[i].displayTime
-                });
+                if (data[i].patient != null) {
 
+                    var temp = {
+                        time: data[i].time,
+                        id: data[i].id,
+                        displayTime: data[i].displayTime,
+                        patient:data[i].patient
+                    };
+
+                    socket.emit("getNewAppointmentPatient", data[i].patient);
+                    socket.on("newAppointmentPatientData", function (results) {
+                        vm.inventory.push({
+
+                            time: temp.time,
+                            id: temp.id,
+                            displayTime: temp.displayTime,
+                            patient: temp.patient,
+                            DOB: results[0].DOB,
+                            healthcard: results[0].healthcard,
+                            phone: results[0].phone,
+                            address: results[0].address,
+                            name: results[0].name
+                        });
+
+
+                    });
+                }
+                else {
+                    vm.inventory.push({
+                        time: data[i].time,
+                        id: data[i].id,
+                        patient: data[i].patient,
+                        displayTime: data[i].displayTime
+
+                    });
+                }
             }
+
             var date = document.getElementById('datepicker').value;
             console.log("init " +date);
             socket.emit('updateRecordsSet',date);

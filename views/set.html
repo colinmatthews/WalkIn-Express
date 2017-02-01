@@ -135,6 +135,10 @@
             <div class="list-group-item clearfix" style="background-color: rgba(185,37,24,0.46)">
                 <p>{{ item.displayTime }}</p>
                     <div class="pull-right">
+                        <button class="btn btn-xs btn-warning" id="show-modal3" class="btn btn-danger" v-on:click="showModal2 = true">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                        <confirmmodal v-if="showModal2" @close="showModal2 = false" v-bind:item="item"></confirmmodal>
 
                         <button class="btn btn-xs btn-warning" id="show-modal2" class="btn btn-danger" v-on:click="showModal = true">
                             <span class="glyphicon glyphicon-info-sign"></span>
@@ -208,6 +212,39 @@
 </template>
 
 
+<template id="confirmmodal-template">
+    <transition name="modal">
+        <div class="modal-mask">
+            <div class="modal-wrapper">
+                <div class="modal-container">
+
+                    <div class="modal-header">
+                        <div name="header">
+                            <h3>Delete Booked Appointment</h3>
+                        </div>
+                    </div>
+
+                    <div class="modal-body">
+                        <div name="body">
+                            <b>This appointment has been booked by a patient.</b>
+                            <br>
+                            <b> Are you sure you want to delete this appointment?</b>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <div id="footer1">
+                            <button class="btn btn-danger" @click="$emit('close')">No</button>
+                            <button class="btn btn-primary" v-on:click="deleteAppointment(item.id)" @click="$emit('close')">Yes</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </transition>
+</template>
+
 <template id="patientmodal-template">
     <transition name="modal">
         <div class="modal-mask">
@@ -223,17 +260,17 @@
                     <div class="modal-body">
                         <div name="body">
 
-                            <p> <b>Name: </b>{{ item.patientData.name }}</p>
-                            <p> <b>Date of Birth: </b> {{ item.patientData.DOB }}</p>
-                            <p> <b>Healthcard: </b> {{ item.patientData.healthcard }}</p>
-                            <p> <b>Phone: </b> {{ item.patientData.phone }}</p>
-                            <p> <b>Address: </b> {{ item.patientData.address }}</p>
+                            <p> <b>Name: </b>{{ item.name }}</p>
+                            <p> <b>Date of Birth: </b> {{ item.DOB }}</p>
+                            <p> <b>Healthcard: </b> {{ item.healthcard }}</p>
+                            <p> <b>Phone: </b> {{ item.phone }}</p>
+                            <p> <b>Address: </b> {{ item.address }}</p>
 
                         </div>
                     </div>
 
                     <div class="modal-footer">
-                        <div id="footer1">
+                        <div id="footer3">
                             <button class="btn btn-danger" @click="$emit('close')">Close</button>
 
                         </div>

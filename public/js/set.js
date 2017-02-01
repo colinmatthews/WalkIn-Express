@@ -79,7 +79,6 @@ var vm = new Vue({
                             displayTime: temp.displayTime,
                             patient: temp.patient,
                             DOB: results[0].DOB,
-                            healthcard: results[0].healthcard,
                             phone: results[0].phone,
                             address: results[0].address,
                             name: results[0].name

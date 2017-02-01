@@ -107,14 +107,17 @@
         </div>
         <div class="panel-body">
             <p> {{ item.name }}</p>
-            <p> {{ item.healthcard }}</p>
             <p> {{ item.DOB }}</p>
             <p> {{ item.phone }}</p>
             <p> {{ item.address }}</p>
 
         </div>
         <div class="panel-footer">
-            <button type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()" v-on:click="setViewed(item.id)">Dismiss</button>
+            <button style ="float:right;"type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()"
+                    v-on:click="confirmAppointment()" v-on:click="setViewed(item.id)">Accept</button>
+
+            <button  type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()"
+                     v-on:click="denyAppointment()" v-on:click="setViewed(item.id)" >Deny</button>
 
         </div>
     </div>

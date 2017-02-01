@@ -9,6 +9,8 @@ var path = require('path');
 var r = require('rethinkdb');
 var fs = require("fs")
 var stormpath = require('express-stormpath');
+var SparkPost = require('sparkpost');
+var client = new SparkPost('15756eb2514dee0c0c069401c1f49a99456f790c');
 
 
 var port = 8000;
@@ -48,7 +50,11 @@ app.on('stormpath.ready', function () {
     console.log('Stormpath Ready!');
 });
 
+
+
+
 io.on("connection", function (socket) {
+
 
     var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});;
     today = new Date(today + 'UTC');
@@ -111,6 +117,52 @@ io.on("connection", function (socket) {
                 });
             });
         });
+    });
+
+    /*
+     Called From:
+            dashboard.js
+     Function:
+            Checks appointments table for a change in data for the current date
+     Purpose:
+            Used to check if any appointment data has changed,specifically looks for changes in
+            the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
+     Context:
+            Called after getInitialPatients is called.
+     */
+
+    socket.on('confirmAppointment',function(userEmail){
+        console.log("confirm");
+
+        client.transmissions.send({
+            content: {
+                from: 'testing@sparkpostbox.com',
+                subject: 'Your Appointment Was Confirmed!',
+                html:'<html><body>' +
+                '<p> Your appointment has been confirmed!</p><br><p>Thanks for using Walk-In Express!</p></body></html>'
+            },
+            recipients: [
+                {address: userEmail}
+            ]
+        });
+
+    });
+
+    socket.on('denyAppointment',function(userEmail){
+        console.log("deny");
+
+        client.transmissions.send({
+            content: {
+                from: 'testing@sparkpostbox.com',
+                subject: 'Your Appointment Was Denied',
+                html:'<html><body>' +
+                '<p> There was a problem with your information when trying to book an appointment. Please visit the clinic to seek care while we try to sort this out!</p><br><p>Thanks for using Walk-In Express!</p></body></html>'
+            },
+            recipients: [
+                {address: userEmail}
+            ]
+        });
+
     });
 
 
@@ -432,7 +484,6 @@ io.on("connection", function (socket) {
                 "DOB": data.DOB,
                 "address": data.address,
                 "doctor_id": data.doctor_id,
-                "healthcard": data.healthcard,
                 "name": data.name,
                 "phone": data.phone
             }).run(rconnection, function (err, cursor) {

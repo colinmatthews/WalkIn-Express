@@ -14,9 +14,15 @@ Vue.component('new-appt',{
             socket.emit("setViewed",id);
             for(var n=0;n<vm.inventory.length;n++){
                 if(vm.inventory[n].id == id){
-                    vm.inventory.splice(i,1);
+                    vm.inventory.splice(n,1);
                 }
             }
+        },
+        confirmAppointment:function(){
+            socket.emit('confirmAppointment','matthews.colin21@gmail.com');
+        },
+        denyAppointment:function(){
+            socket.emit('denyAppointment','matthews.colin21@gmail.com');
         }
     }
 });
@@ -36,7 +42,7 @@ var vm = new Vue({
             for (var i = 0; i < data.length; i++) {
                 if(data[i].patient!=null) {
                     vm.inventory.push({
-                        time: data[i].time, id: data[i].id, DOB: data[i].DOB, healthcard: data[i].healthcard,
+                        time: data[i].time, id: data[i].id, DOB: data[i].DOB,
                         phone: data[i].phone, address: data[i].address, name: data[i].name, patient: data[i].patient,
                         displayTime:data[i].displayTime
                     });
@@ -78,7 +84,6 @@ var vm = new Vue({
                                 displayTime:data.new_val.displayTime,
                                 id: data.new_val.id,
                                 DOB: results[n].DOB,
-                                healthcard: results[n].healthcard,
                                 phone: results[n].phone,
                                 address: results[n].address,
                                 name: results[n].name,

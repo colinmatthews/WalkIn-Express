@@ -21,8 +21,9 @@ Vue.component('new-appt',{
         confirmAppointment:function(){
             socket.emit('confirmAppointment','matthews.colin21@gmail.com');
         },
-        denyAppointment:function(){
+        denyAppointment:function(appointmentID){
             socket.emit('denyAppointment','matthews.colin21@gmail.com');
+            socket.emit('deleteAppointment',appointmentID);
         }
     }
 });

@@ -117,7 +117,7 @@
                     v-on:click="confirmAppointment()" v-on:click="setViewed(item.id)">Accept</button>
 
             <button  type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()"
-                     v-on:click="denyAppointment()" v-on:click="setViewed(item.id)" >Deny</button>
+                     v-on:click="denyAppointment(item.id)" v-on:click="setViewed(item.id)" >Deny</button>
 
         </div>
     </div>

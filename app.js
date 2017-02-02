@@ -274,11 +274,54 @@ io.on("connection", function (socket) {
     });
 
 
+
     //*********************************
     //
     //          set.js
     //
     //*********************************
+
+
+    /*
+     Called From:
+            set.js
+     Function:
+            Joins patient and appointment data for all appointments that have patients
+     Purpose:
+            Used to initialize set with booked appointments
+     Context:
+           Called at the beginning of the file
+
+
+     */
+    socket.on("initAppointmentsSet", function (date) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            // today's appointments that have patients that have not been viewed
+            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC"))).eqJoin
+            ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
+                .coerceTo('array').run(rconnection, function (err, cursor) {
+
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("initRecordsSet", result);
+                });
+            });
+
+        });
+    });
 
 
     /*
@@ -337,7 +380,17 @@ io.on("connection", function (socket) {
     });
 
 
+    /*
+     Called by:
+            set.js
+     Function:
+           Gets all the appointments on a specific date
+     Purpose:
+            Used to get all appointments that do not have patients booked
+     Context:
+            Called after initAppointmentsSet
 
+     */
     socket.on("getDateAppointments", function (date) {
 
         var checkDate = new Date(date +'UTC');

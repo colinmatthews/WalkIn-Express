@@ -7,7 +7,8 @@ var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'nu
 
 // connect to app.js, get today's appointments
 var socket = io.connect();
-socket.emit("getDateAppointments",today);
+//socket.emit("getDateAppointments",today);
+socket.emit("initAppointmentsSet", today);
 
 var confirmmodal = {
     props: ['item', 'showModal2'],
@@ -59,43 +60,38 @@ var vm = new Vue({
     },
     created: function () {
 
+        var index =0;
+
+        socket.on("initRecordsSet", function (results) {
+           for(var e = 0;e<results.length; e++ ) {
+               vm.inventory.push({
+
+
+                   time: results[e].time,
+                   id: results[e].id,
+                   displayTime: results[e].displayTime,
+                   patient: results[e].patient,
+                   DOB: results[e].DOB,
+                   phone: results[e].phone,
+                   address: results[e].address,
+                   name: results[e].name
+               });
+               index ++;
+           }
+            socket.emit("getDateAppointments",today);
+        });
+
+
         socket.on("initRecordsAppointments",function(data){
-            for (var i = 0; i < data.length; i++) {
-                if (data[i].patient != null) {
 
-                    var temp = {
-                        time: data[i].time,
-                        id: data[i].id,
-                        displayTime: data[i].displayTime,
-                        patient:data[i].patient
-                    };
+            for (var i = index; i < data.length; i++) {
+                vm.inventory.push({
+                    time: data[i].time,
+                    id: data[i].id,
+                    patient: data[i].patient,
+                    displayTime: data[i].displayTime
 
-                    socket.emit("getNewAppointmentPatient", data[i].patient);
-                    socket.on("newAppointmentPatientData", function (results) {
-                        vm.inventory.push({
-
-                            time: temp.time,
-                            id: temp.id,
-                            displayTime: temp.displayTime,
-                            patient: temp.patient,
-                            DOB: results[0].DOB,
-                            phone: results[0].phone,
-                            address: results[0].address,
-                            name: results[0].name
-                        });
-
-
-                    });
-                }
-                else {
-                    vm.inventory.push({
-                        time: data[i].time,
-                        id: data[i].id,
-                        patient: data[i].patient,
-                        displayTime: data[i].displayTime
-
-                    });
-                }
+                });
             }
 
             var date = document.getElementById('datepicker').value;

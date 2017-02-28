@@ -7,8 +7,7 @@ var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'nu
 
 // connect to app.js, get today's appointments
 var socket = io.connect();
-//socket.emit("getDateAppointments",today);
-socket.emit("initAppointmentsSet", today);
+socket.emit("getBookedAppointments", today);
 
 var confirmmodal = {
     props: ['item', 'showModal2'],
@@ -62,7 +61,7 @@ var vm = new Vue({
 
         var index =0;
 
-        socket.on("initRecordsSet", function (results) {
+        socket.on("initBookedAppointmentsSet", function (results, date) {
            for(var e = 0;e<results.length; e++ ) {
                vm.inventory.push({
 
@@ -78,24 +77,27 @@ var vm = new Vue({
                });
                index ++;
            }
-            socket.emit("getDateAppointments",today);
+            //socket.emit("getDateAppointments",today);
+            socket.emit("getUnbookedAppointments",date);
         });
 
 
-        socket.on("initRecordsAppointments",function(data){
-
-            for (var i = index; i < data.length; i++) {
+        //socket.on("initRecordsAppointments",function(data){
+        socket.on("initUnbookedAppointmentsSet",function(data, date){
+            // results in duplicate appointments for booked appointments, with this loop adding ones with no patient data
+            console.log(data.length);
+            console.log(index);
+            for (var i = index; i < (data.length)+ index; i++) {
+                console.log(data.length);
                 vm.inventory.push({
-                    time: data[i].time,
-                    id: data[i].id,
-                    patient: data[i].patient,
-                    displayTime: data[i].displayTime
+                    time: data[i-index].time,
+                    id: data[i-index].id,
+                    patient: data[i-index].patient,
+                    displayTime: data[i-index].displayTime
 
                 });
             }
 
-            var date = document.getElementById('datepicker').value;
-            console.log("init " +date);
             socket.emit('updateRecordsSet',date);
         });
 
@@ -159,7 +161,8 @@ function changeDate(){
     document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     console.log(date);
     vm.deleteLocalContent();
-    socket.emit('getDateAppointments',date);
+    socket.emit('getBookedAppointments',date);
+    //socket.emit('getDateAppointments',date);// not getting patient data after changing dates
 }
 // creates the date picker from jquery-ui and populates with today's date
 $( function() {

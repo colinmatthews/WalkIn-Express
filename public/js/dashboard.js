@@ -1,9 +1,10 @@
 /**
  * Created by colin on 10/27/2016.
  */
-
+var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+console.log(today);
 var socket = io.connect();
-socket.emit("getInitialPatients");
+socket.emit("getInitialPatients", today);
 // Triggers event in app.js to get initial data from the database.
 
 Vue.component('new-appt',{
@@ -21,9 +22,10 @@ Vue.component('new-appt',{
         confirmAppointment:function(){
             socket.emit('confirmAppointment','matthews.colin21@gmail.com');
         },
-        denyAppointment:function(appointmentID){
+        denyAppointment:function(appointmentID, time){
             socket.emit('denyAppointment','matthews.colin21@gmail.com');
             socket.emit('deleteAppointment',appointmentID);
+            socket.emit('newAppointmentSlot',time,today);
         }
     }
 });
@@ -51,7 +53,7 @@ var vm = new Vue({
                 }
             }
 
-            socket.emit("updateAppointmentsDashboard");
+            socket.emit("updateAppointmentsDashboard",today);
         });
 
         // Listens for response from app.js for changes in appointments

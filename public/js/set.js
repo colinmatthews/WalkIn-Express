@@ -82,9 +82,7 @@ var vm = new Vue({
         });
 
 
-        //socket.on("initRecordsAppointments",function(data){
         socket.on("initUnbookedAppointmentsSet",function(data, date){
-            // results in duplicate appointments for booked appointments, with this loop adding ones with no patient data
             console.log(data.length);
             console.log(index);
             for (var i = index; i < (data.length)+ index; i++) {
@@ -162,8 +160,8 @@ function changeDate(){
     console.log(date);
     vm.deleteLocalContent();
     socket.emit('getBookedAppointments',date);
-    //socket.emit('getDateAppointments',date);// not getting patient data after changing dates
 }
+
 // creates the date picker from jquery-ui and populates with today's date
 $( function() {
     $( "#datepicker" ).datepicker();

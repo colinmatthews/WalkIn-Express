@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "docco": "^0.7.0",
     "express": "^4.14.0",
     "express-stormpath": "^3.1.8",
     "rethinkdb": "^2.3.3",

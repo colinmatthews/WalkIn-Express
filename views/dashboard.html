@@ -114,7 +114,7 @@
         </div>
         <div class="panel-footer">
             <button style ="float:right;"type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()"
-                    v-on:click="confirmAppointment()" v-on:click="setViewed(item.id)">Accept</button>
+                    @click="setViewed(item.id)" v-on:click="confirmAppointment(item.id)" >Accept</button>
 
             <button  type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()"
                      v-on:click="denyAppointment(item.id)" v-on:click="setViewed(item.id)" >Deny</button>

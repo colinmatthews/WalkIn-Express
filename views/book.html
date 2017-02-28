@@ -133,7 +133,7 @@
 <!-- Template for new appointments -->
 <template id="appointment">
 
-    <div>
+    <div v-if="item.patient == null">
         <div class="list-group">
             <div class="list-group-item clearfix">
                 <p>{{ item.displayTime }}</p>
@@ -192,7 +192,8 @@
                             <div class="modal-footer">
                         <div id="footer">
                             <button class="btn btn-danger" @click="$emit('close')">Close Without Booking</button>
-                            <button class="btn btn-primary" style="float:right;" v-on:click="bookAppointment(item.id)" @click="$emit('close')">Book!</button>
+                            <button class="btn btn-primary" style="float:right;"  v-on:click="bookAppointment(item.id)" @click="$emit('close')" >Book!</button>
+                            <!-- v-on:click="bookAppointment(item.id)" -->
                         </div>
                     </div>
 

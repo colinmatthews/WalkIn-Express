@@ -62,11 +62,6 @@ app.on('stormpath.ready', function () {
 //so these functions will only be called when particular events occur ( button click, page load, etc)
 io.on("connection", function (socket) {
 
-    //  `var today` needs to be removed, the date should be passed to our functions from the client to ensure that it is correct
-    var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
-    today = new Date(today + 'UTC');
-    console.log(today);
-
     // rconnection and myCursor are used when connecting to rethinkDB, so that we can access the connection or the cursor
     // if we need to.
     //  rconnection is the connection to the database, and myCursor is an listener object that is
@@ -92,6 +87,52 @@ io.on("connection", function (socket) {
     //### Dashboard.js
     //***
     // The following function calls are called from dashboard.js
+
+
+    // ***getInitialPatients***
+    //
+    //
+    /*
+     Called by:
+     dashboard.js
+     Function:
+     gets initial data for appointments that have patients associated with them
+     Purpose:
+     initializes dashboard with bookings
+     Context:
+     called at the beginning of dashboard.js
+     */
+    socket.on("getInitialPatients", function (today) {
+        console.log("Today in getInitialPatients");
+        console.log(today);
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            // today's appointments that have patients that have not been viewed
+            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).eqJoin
+            ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
+                .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
+
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("initRecords", result);
+                });
+            });
+
+        });
+    });
+
     //
     //  ***updateAppointmentsDashboard***
     //
@@ -106,7 +147,7 @@ io.on("connection", function (socket) {
     //**When:**
     //  Called after getInitialPatients is called.
     //
-    socket.on("updateAppointmentsDashboard", function () {
+    socket.on("updateAppointmentsDashboard", function (today) {
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -119,12 +160,50 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(today)).changes().run(rconnection, function (err, cursor) {
+            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).changes().run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.each(function (err, result) {
                     if (err) throw err;
                     console.log(result);
                     socket.emit("updateAppointmentsDashboardResults", result);
+                });
+            });
+        });
+    });
+
+    //  ***getPatient***
+    //
+    //  **What:**
+    //   Gets data for a specific patient ID
+    //
+    //  **Why:**
+    //  If an appointment has a patient assigned to it, this function is called
+    //to get the patients information
+    //
+    //**When:**
+    //   After updateAppointmentsDashboardResults is received by the client
+    //
+
+    socket.on("getPatient", function (patientID) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('patients').filter({id: patientID}).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("newAppointmentPatientData", result);
+
                 });
             });
         });
@@ -192,44 +271,6 @@ io.on("connection", function (socket) {
     });
 
 
-    //  ***getPatient***
-    //
-    //  **What:**
-    //   Gets data for a specific patient ID
-    //
-    //  **Why:**
-    //  If an appointment has a patient assigned to it, this function is called
-    //to get the patients information
-    //
-    //**When:**
-    //   After updateAppointmentsDashboardResults is received by the client
-    //
-
-    socket.on("getPatient", function (patientID) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table('patients').filter({id: patientID}).run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("newAppointmentPatientData", result);
-
-                });
-            });
-        });
-    });
-
     //  ***setViewed***
     //
     //  **What:**
@@ -263,47 +304,6 @@ io.on("connection", function (socket) {
     });
 
 
-    // ***getInitialPatients***
-    //
-    //
-    /*
-     Called by:
-            dashboard.js
-     Function:
-            gets initial data for appointments that have patients associated with them
-     Purpose:
-            initializes dashboard with bookings
-     Context:
-            called at the beginning of dashboard.js
-     */
-    socket.on("getInitialPatients", function () {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            // today's appointments that have patients that have not been viewed
-            r.table('appointments').filter(r.row('timestamp').date().eq(today)).eqJoin
-                ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
-                .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
-
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("initRecords", result);
-                });
-            });
-
-        });
-    });
 
 
 
@@ -442,46 +442,6 @@ io.on("connection", function (socket) {
     });
 
 
-    /*
-     Called by:
-            set.js
-     Function:
-           Gets all the appointments on a specific date
-     Purpose:
-            Used to get all appointments that do not have patients booked
-     Context:
-            Called after initAppointmentsSet
-
-     */
-    socket.on("getDateAppointments", function (date) {
-
-        var checkDate = new Date(date +'UTC');
-        console.log(checkDate);
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("initRecordsAppointments", result);
-                });
-            });
-
-        });
-    });
-
-
 
     /*
     Called by:
@@ -564,11 +524,53 @@ io.on("connection", function (socket) {
 
     });
 
+
     //*********************************
     //
     //          book.js
     //
     //*********************************
+
+
+    /*
+     Called by:
+     set.js
+     Function:
+     Gets all the appointments on a specific date
+     Purpose:
+     Used to get all appointments that do not have patients booked
+     Context:
+     Called after initAppointmentsSet
+
+     */
+    socket.on("getDateAppointments", function (date) {
+
+        var checkDate = new Date(date +'UTC');
+        console.log(checkDate);
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("initRecordsAppointments", result);
+                });
+            });
+
+        });
+    });
+
 
 
     /*

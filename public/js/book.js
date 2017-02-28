@@ -19,7 +19,6 @@ var modal = {
                 "DOB":  document.getElementById("dobInput").value ,
                 "address":  document.getElementById("addressInput").value,
                 "doctor_id": "4758038d-fc7f-4c7c-81ef-bce8cda709f0",
-                "healthcard":  document.getElementById("hcInput").value ,
                 "name":  document.getElementById("nameInput").value ,
                 "phone":  document.getElementById("phoneInput").value
             };
@@ -62,10 +61,10 @@ var vm = new Vue({
                     });
                 }
             }
-            socket.emit('updateRecords');
+            socket.emit('updateRecordsSet',today);
         });
 
-        socket.on('updateRecordsResults',function(data){
+        socket.on('updateRecordsResultsSet',function(data){
             if(data.old_val == null){
                 vm.inventory.push({
                     time: data.new_val.time,

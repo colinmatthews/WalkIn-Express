@@ -51,11 +51,11 @@ var vm = new Vue({
                 }
             }
 
-            socket.emit("updateRecordsDashboard");
+            socket.emit("updateAppointmentsDashboard");
         });
 
         // Listens for response from app.js for changes in appointments
-        socket.on("updateRecordsResultsDashboard",function(data){
+        socket.on("updateAppointmentsDashboardResults",function(data){
 
             // if a new appointment is added
             if(data.old_val == null){
@@ -76,7 +76,7 @@ var vm = new Vue({
             // if an existing appointment is updated
             else{
                 if(data.new_val.patient!=null && data.new_val.viewed == false) {
-                    socket.emit("getNewAppointmentPatient",data.new_val.patient);
+                    socket.emit("getPatient",data.new_val.patient);
                     socket.on("newAppointmentPatientData",function(results){
 
                         for(var n = 0; n < results.length ;n ++) {

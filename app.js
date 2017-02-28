@@ -1,6 +1,8 @@
 /**
  * Created by colin on 10/27/2016.
  */
+
+//### Initialization
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
@@ -9,12 +11,14 @@ var path = require('path');
 var r = require('rethinkdb');
 var fs = require("fs")
 var stormpath = require('express-stormpath');
+
+// Sparkpost is used for sending emails to the patients
 var SparkPost = require('sparkpost');
 var client = new SparkPost('15756eb2514dee0c0c069401c1f49a99456f790c');
 
 
 var port = 8000;
-
+// Stormpath is used for our user authentication
 app.use(stormpath.init(app, {
     website:true
 
@@ -25,11 +29,11 @@ app.use("/public", express.static(__dirname + '/public'));
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
-
+//Adding `stormpath.loginRequired` make this route only accessible to logged in users
 app.get('/book', stormpath.loginRequired, function (req, res) {
     res.sendFile(__dirname + '/views/book.html');
 });
-
+// `groupsRequired[('clinics)]` makes this route only accessible to users who are a part of the clinics group
 app.get('/dashboard',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/dashboard.html');
 });
@@ -52,19 +56,26 @@ app.on('stormpath.ready', function () {
 
 
 
-
+//# Socket IO Calls
+//***
+//  Socket is used to make calls to our database, which are triggered by the client. Its uses an event-driven approach
+//so these functions will only be called when particular events occur ( button click, page load, etc)
 io.on("connection", function (socket) {
 
-
-    var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});;
+    //  `var today` needs to be removed, the date should be passed to our functions from the client to ensure that it is correct
+    var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
     today = new Date(today + 'UTC');
     console.log(today);
 
+    // rconnection and myCursor are used when connecting to rethinkDB, so that we can access the connection or the cursor
+    // if we need to.
+    //  rconnection is the connection to the database, and myCursor is an listener object that is
+    // created when we run a query with `.changes()` at the end of it.
     var rconnection = null;
     var myCursor = null;
     console.log("You connected!");
 
-
+    // caCert is a SSL certificate for connecting to db
     var caCert = fs.readFileSync(__dirname + '/cacert.txt').toString().trim();
 
     var dbConfig = {
@@ -78,24 +89,24 @@ io.on("connection", function (socket) {
         }
     };
 
-    //*********************************
+    //### Dashboard.js
+    //***
+    // The following function calls are called from dashboard.js
     //
-    //          Dashboard.js
+    //  ***updateAppointmentsDashboard***
     //
-    //*********************************
-
-    /*
-    Called From:
-            dashboard.js
-    Function:
-            Checks appointments table for a change in data for the current date
-    Purpose:
-            Used to check if any appointment data has changed,specifically looks for changes in
-            the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
-    Context:
-            Called after getInitialPatients is called.
-     */
-    socket.on("updateRecordsDashboard", function () {
+    //  **What:**
+    //  Checks appointments table for a change in data for the current date by creating a listener object
+    // for the appointments table, filtered to today's date
+    //
+    //  **Why:**
+    //  Used to check if any appointment data has changed, specifically looks for changes in
+    //the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
+    //
+    //**When:**
+    //  Called after getInitialPatients is called.
+    //
+    socket.on("updateAppointmentsDashboard", function () {
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -113,23 +124,25 @@ io.on("connection", function (socket) {
                 cursor.each(function (err, result) {
                     if (err) throw err;
                     console.log(result);
-                    socket.emit("updateRecordsResultsDashboard", result);
+                    socket.emit("updateAppointmentsDashboardResults", result);
                 });
             });
         });
     });
 
-    /*
-     Called From:
-            dashboard.js
-     Function:
-            Checks appointments table for a change in data for the current date
-     Purpose:
-            Used to check if any appointment data has changed,specifically looks for changes in
-            the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
-     Context:
-            Called after getInitialPatients is called.
-     */
+    //  ***confirmAppointment***
+    //
+    //  **What:**
+    //   Sends an email to the patient confirming their appointment
+    //
+    //  **Why:**
+    //  Allows communication between the patient and the clinic, and give the patient peace of mind their appointment
+    //  has been received.
+    //
+    //**When:**
+    //  Called when the "Accept" button on the dashboard is clicked.
+    //
+
 
     socket.on('confirmAppointment',function(userEmail){
         console.log("confirm");
@@ -147,6 +160,19 @@ io.on("connection", function (socket) {
         });
 
     });
+
+    //  ***denyAppointment***
+    //
+    //  **What:**
+    //   Sends an email to the patient denying their appointment
+    //
+    //  **Why:**
+    //  Allows communication between the patient and the clinic. Their appointment was likely denied due to the information
+    //  they entered was false.
+    //
+    //**When:**
+    //  Called when the "Decline" button on the dashboard is clicked.
+    //
 
     socket.on('denyAppointment',function(userEmail){
         console.log("deny");
@@ -166,20 +192,20 @@ io.on("connection", function (socket) {
     });
 
 
-    /*
-    Called from:
-            dashboard.js
-    Function:
-            Gets data for a specific patient ID
-    Purpose:
-            If an existing appointment is updated, and a patient is added to that appointment, this function is called
-            to get the corresponding patient information
-    Context:
-            Called after updateRecordsResult
+    //  ***getPatient***
+    //
+    //  **What:**
+    //   Gets data for a specific patient ID
+    //
+    //  **Why:**
+    //  If an appointment has a patient assigned to it, this function is called
+    //to get the patients information
+    //
+    //**When:**
+    //   After updateAppointmentsDashboardResults is received by the client
+    //
 
-     */
-
-    socket.on("getNewAppointmentPatient", function (patientID) {
+    socket.on("getPatient", function (patientID) {
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -204,16 +230,18 @@ io.on("connection", function (socket) {
         });
     });
 
-    /*
-     Called by:
-            dashboard.js
-     Function:
-            sets the 'viewed' property on an appointment to true
-     Purpose:
-            a viewed appointment will not appear on the dashboard (must be dismissed by user)
-     Context:
-            part of the appointment template on dashboard.html, and the appointment component
-     */
+    //  ***setViewed***
+    //
+    //  **What:**
+    //   Sets the *viewed* value on an appointment to true
+    //
+    //  **Why:**
+    //  Once an appointment has been accepted or declined, setting the *viewed* value dismisses the appointment popup
+    //
+    //**When:**
+    //   After the "Accept" or "Decline" button has been clicked
+    //
+
     socket.on("setViewed", function (appointmentID) {
         r.connect({
             host: dbConfig.host,
@@ -234,6 +262,10 @@ io.on("connection", function (socket) {
         });
     });
 
+
+    // ***getInitialPatients***
+    //
+    //
     /*
      Called by:
             dashboard.js
@@ -294,7 +326,9 @@ io.on("connection", function (socket) {
 
 
      */
-    socket.on("initAppointmentsSet", function (date) {
+
+
+    socket.on("getBookedAppointments", function (date) {
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -316,9 +350,37 @@ io.on("connection", function (socket) {
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
                     console.log(result);
-                    socket.emit("initRecordsSet", result);
+                    socket.emit("initBookedAppointmentsSet", result, date);
                 });
             });
+
+        });
+    });
+
+    socket.on("getUnbookedAppointments", function (date) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            // today's appointments that have patients that have not been viewed
+            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC")))
+                .filter({patient: null}).run(rconnection, function (err, cursor) {
+
+                    if (err) throw err;
+                    cursor.toArray(function (err, result) {
+                        if (err) throw err;
+                        console.log(result);
+                        socket.emit("initUnbookedAppointmentsSet", result, date);
+                    });
+                });
 
         });
     });

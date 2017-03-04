@@ -22,10 +22,10 @@ Vue.component('new-appt',{
         confirmAppointment:function(){
             socket.emit('confirmAppointment','matthews.colin21@gmail.com');
         },
-        denyAppointment:function(appointmentID, time){
+        denyAppointment:function(appointmentID, time, displayTime){
             socket.emit('denyAppointment','matthews.colin21@gmail.com');
             socket.emit('deleteAppointment',appointmentID);
-            socket.emit('newAppointmentSlot',time,today);
+            socket.emit('remakeAppointmentSlot',time,today,displayTime);
         }
     }
 });

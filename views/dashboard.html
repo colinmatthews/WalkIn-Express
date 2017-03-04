@@ -106,10 +106,20 @@
 
         </div>
         <div class="panel-body">
-            <p> {{ item.name }}</p>
-            <p> {{ item.DOB }}</p>
-            <p> {{ item.phone }}</p>
-            <p> {{ item.address }}</p>
+            <label>Name:</label>
+            <span> {{ item.name }}</span>
+            <br>
+
+            <label>Date of birth:</label>
+            <span> {{ item.DOB }}</span>
+            <br>
+
+            <label>Phone:</label>
+            <span> {{ item.phone }}</span>
+            <br>
+
+            <label>Address:</label>
+            <span> {{ item.address }}</span>
 
         </div>
         <div class="panel-footer">
@@ -117,7 +127,7 @@
                     @click="setViewed(item.id)" v-on:click="confirmAppointment(item.id)" >Accept</button>
 
             <button  type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()"
-                     v-on:click="denyAppointment(item.id, item.time)">Deny</button>
+                     v-on:click="denyAppointment(item.id, item.time, item.displayTime)">Deny</button>
 
         </div>
     </div>

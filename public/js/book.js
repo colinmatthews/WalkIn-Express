@@ -50,10 +50,12 @@ var vm = new Vue({
     },
     created: function () {
 
+        var tempArray = [];
+
         socket.on("initRecordsAppointments",function(data){
             for (var i = 0; i < data.length; i++) {
                 if(data[i].patient == null) {
-                    vm.inventory.push({
+                    tempArray.push({
                         time: data[i].time,
                         id: data[i].id,
                         patient: data[i].patient,
@@ -61,6 +63,15 @@ var vm = new Vue({
                     });
                 }
             }
+
+            tempArray.sort(function(a, b){
+                return a.time > b.time
+            });
+
+            for( var j=0; j < tempArray.length;j++){
+                vm.inventory.push (tempArray[j]);
+            }
+
             socket.emit('updateRecordsSet',today);
         });
 

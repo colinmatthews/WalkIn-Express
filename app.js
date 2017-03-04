@@ -481,7 +481,7 @@ io.on("connection", function (socket) {
     Purpose:
             allows a user to create a new appointment time
      */
-    socket.on("newAppointmentSlot", function (appointmentTime,date) {
+    socket.on("newAppointmentSlot", function (hour,minute,date,period) {
         console.log(date);
         r.connect({
             host: dbConfig.host,
@@ -496,26 +496,19 @@ io.on("connection", function (socket) {
             if (err) throw err;
             rconnection = conn;
             var displayTime;
-
-            if (appointmentTime == 12) {
-                displayTime = appointmentTime + "PM";
+            if( hour > 12){
+                displayTime = (hour - 12) + ":" + minute + " " + period;
             }
-            else if (appointmentTime == 24) {
-                displayTime = appointmentTime - 12 + "AM";
-            }
-            else if (appointmentTime >= 13) {
-                displayTime = appointmentTime - 12 + "PM";
+            else{
+                displayTime = hour + ":" + minute + " " + period;
             }
 
-            else {
-                displayTime = appointmentTime + "AM";
-            }
             r.table('appointments').insert({
                 "patient": null,
-                "time": appointmentTime,
+                "time": hour + (minute/60),
                 "viewed": false,
                 "displayTime": displayTime,
-                timestamp: new Date(date+"UTC"),
+                timestamp: new Date(date+"UTC")
             }).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 console.log("NEW APPOINTMENT MADE " + cursor);
@@ -523,6 +516,37 @@ io.on("connection", function (socket) {
         });
 
     });
+
+    socket.on("remakeAppointmentSlot", function (time,date,displayTime) {
+        console.log(date);
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+
+            r.table('appointments').insert({
+                "patient": null,
+                "time": time,
+                "viewed": false,
+                "displayTime": displayTime,
+                timestamp: new Date(date+"UTC")
+            }).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                console.log("NEW APPOINTMENT MADE " + cursor);
+            });
+        });
+
+    });
+
+
 
 
     //*********************************

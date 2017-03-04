@@ -59,11 +59,13 @@ var vm = new Vue({
     },
     created: function () {
 
+        var tempArray = [];
         var index =0;
 
         socket.on("initBookedAppointmentsSet", function (results, date) {
            for(var e = 0;e<results.length; e++ ) {
-               vm.inventory.push({
+               //vm.inventory
+                tempArray.push({
 
 
                    time: results[e].time,
@@ -77,7 +79,6 @@ var vm = new Vue({
                });
                index ++;
            }
-            //socket.emit("getDateAppointments",today);
             socket.emit("getUnbookedAppointments",date);
         });
 
@@ -87,13 +88,22 @@ var vm = new Vue({
             console.log(index);
             for (var i = index; i < (data.length)+ index; i++) {
                 console.log(data.length);
-                vm.inventory.push({
+                //vm.inventory.
+                tempArray.push({
                     time: data[i-index].time,
                     id: data[i-index].id,
                     patient: data[i-index].patient,
                     displayTime: data[i-index].displayTime
 
                 });
+            }
+
+            tempArray.sort(function(a, b){
+                return a.time > b.time
+            });
+
+            for( var j=0; j < tempArray.length;j++){
+                vm.inventory.push (tempArray[j]);
             }
 
             socket.emit('updateRecordsSet',date);
@@ -127,18 +137,20 @@ Vue.component('modal', {
     template: '#modal-template',
     methods:{
         newAppointmentSlot:function(){
-            var time = parseInt(document.getElementById('timeInput').value);
-            var zone = document.getElementById('sel1').value;
+            var hour = parseInt(document.getElementById('hourInput').value);
+            var minute = parseInt(document.getElementById('minInput').value);
+            var period = document.getElementById('period').value;
             var date = document.getElementById('datepicker').value;
-            if(zone == "PM" && time != 12){
+            if(period == "PM" && hour != 12){
 
-                time = time + 12;
+                hour = hour + 12.0;
             }
-            if(zone == "AM" && time == 12 ){
-                time=time +12;
+            if(period == "AM" && hour == 12 ){
+                hour = hour +12.0;
             }
+
             console.log(date);
-            socket.emit("newAppointmentSlot",time,date);
+            socket.emit("newAppointmentSlot",hour,minute,date,period);
         }
     }
 });

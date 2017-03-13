@@ -303,219 +303,17 @@ io.on("connection", function (socket) {
         });
     });
 
-
-
-
-
-    //*********************************
+    //  ***remakeAppointmentSlot***
     //
-    //          set.js
+    //  **What:**
+    //   Recreates an appointment that will be soon deleted
     //
-    //*********************************
-
-
-    /*
-     Called From:
-            set.js
-     Function:
-            Joins patient and appointment data for all appointments that have patients
-     Purpose:
-            Used to initialize set with booked appointments
-     Context:
-           Called at the beginning of the file
-
-
-     */
-
-
-    socket.on("getBookedAppointments", function (date) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            // today's appointments that have patients that have not been viewed
-            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC"))).eqJoin
-            ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
-                .coerceTo('array').run(rconnection, function (err, cursor) {
-
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("initBookedAppointmentsSet", result, date);
-                });
-            });
-
-        });
-    });
-
-    socket.on("getUnbookedAppointments", function (date) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            // today's appointments that have patients that have not been viewed
-            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC")))
-                .filter({patient: null}).run(rconnection, function (err, cursor) {
-
-                    if (err) throw err;
-                    cursor.toArray(function (err, result) {
-                        if (err) throw err;
-                        console.log(result);
-                        socket.emit("initUnbookedAppointmentsSet", result, date);
-                    });
-                });
-
-        });
-    });
-
-
-    /*
-     Called From:
-            set.js
-     Function:
-             Checks appointments table for a change in data for the current date
-     Purpose:
-            Used to check if any appointment data has changed,specifically looks for changes in
-            the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
-     Context:
-            Called after getInitialPatients is called.
-     */
-    socket.on("updateRecordsSet", function (date) {
-        var checkDate = new Date(date +'UTC');
-        console.log(checkDate);
-
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
-                console.log('here');
-                if (err) throw err;
-                myCursor=cursor;
-                myCursor.each(function (err, result) {
-                    if (err) throw err;
-                    console.log(" ***** " + result);
-                    socket.emit("updateRecordsResultsSet", result);
-
-                });
-            });
-        });
-    });
-
-    /*
-    Called by:
-            set.js
-    Function:
-            Closes the current cursor
-    Purpose:
-            Used to close the changes query when changing dates, so that there is only ever one changefeed at a time
-            and that changefeed is set to the date the user is current working with
-
-     */
-    socket.on("closeCursor", function () {
-       console.log(myCursor.close());
-    });
-
-
-
-    /*
-    Called by:
-            set.js
-    Function:
-            deletes an appointment by pk
-    Purpose:
-            delete an existing appointment
-    Context:
-            can be called at any time by the user, part of the appointment template
-     */
-    socket.on("deleteAppointment", function (appointmentID) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table('appointments').get(appointmentID).delete().run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                console.log("DELETE APPOINTMENT DATA " + cursor);
-            });
-        });
-    });
-
-    /*
-    Called by:
-            set.js
-    Function:
-            creates a new appointment record
-    Purpose:
-            allows a user to create a new appointment time
-     */
-    socket.on("newAppointmentSlot", function (hour,minute,date,period) {
-        console.log(date);
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            var displayTime;
-            if( hour > 12){
-                displayTime = (hour - 12) + ":" + minute + " " + period;
-            }
-            else{
-                displayTime = hour + ":" + minute + " " + period;
-            }
-
-            r.table('appointments').insert({
-                "patient": null,
-                "time": hour + (minute/60),
-                "viewed": false,
-                "displayTime": displayTime,
-                timestamp: new Date(date+"UTC")
-            }).run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                console.log("NEW APPOINTMENT MADE " + cursor);
-            });
-        });
-
-    });
+    //  **Why:**
+    //  After the clinic denies an appointment, this method is called to recreate the denied appointment
+    //
+    //**When:**
+    //  On deny appointment
+    //
 
     socket.on("remakeAppointmentSlot", function (time,date,displayTime) {
         console.log(date);
@@ -549,24 +347,258 @@ io.on("connection", function (socket) {
 
 
 
-    //*********************************
+
+    //### Set.js
+    //***
+    // The following function calls are called from set.js
+
+
+    //  ***getBookedAppointments***
     //
-    //          book.js
+    //  **What:**
+    //   Returns all of the booked appointments for a given date
     //
-    //*********************************
+    //  **Why:**
+    //  Populate booked appointments on the schedule page
+    //
+    //**When:**
+    //  On the schedule page load
+    //
 
 
-    /*
-     Called by:
-     set.js
-     Function:
-     Gets all the appointments on a specific date
-     Purpose:
-     Used to get all appointments that do not have patients booked
-     Context:
-     Called after initAppointmentsSet
+    socket.on("getBookedAppointments", function (date) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            // today's appointments that have patients that have not been viewed
+            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC"))).eqJoin
+            ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
+                .coerceTo('array').run(rconnection, function (err, cursor) {
 
-     */
+                if (err) throw err;
+                cursor.toArray(function (err, result) {
+                    if (err) throw err;
+                    console.log(result);
+                    socket.emit("initBookedAppointmentsSet", result, date);
+                });
+            });
+
+        });
+    });
+
+    //  ***getUnbookedAppointments***
+    //
+    //  **What:**
+    //   Returns all of the unbooked appointments for a given date
+    //
+    //  **Why:**
+    //  Populate unbooked appointments on the schedule page
+    //
+    //**When:**
+    //  After booked appointments are initialized
+    //
+
+    socket.on("getUnbookedAppointments", function (date) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            // today's appointments that have patients that have not been viewed
+            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC")))
+                .filter({patient: null}).run(rconnection, function (err, cursor) {
+
+                    if (err) throw err;
+                    cursor.toArray(function (err, result) {
+                        if (err) throw err;
+                        console.log(result);
+                        socket.emit("initUnbookedAppointmentsSet", result, date);
+                    });
+                });
+
+        });
+    });
+
+
+    //  ***updateRecordsSet***
+    //
+    //  **What:**
+    //   Creates an event listener for changes in today's appointments
+    //
+    //  **Why:**
+    //  To add /remove appointments from the front end
+    //
+    //**When:**
+    //  After unbooked appointments are added to the schedule
+    //
+    socket.on("updateRecordsSet", function (date) {
+        var checkDate = new Date(date +'UTC');
+        console.log(checkDate);
+
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
+                console.log('here');
+                if (err) throw err;
+                myCursor=cursor;
+                myCursor.each(function (err, result) {
+                    if (err) throw err;
+                    console.log(" ***** " + result);
+                    socket.emit("updateRecordsResultsSet", result);
+
+                });
+            });
+        });
+    });
+
+    ///  ***closeCursor***
+    //
+    //  **What:**
+    //   Closes the current rethinkdb cursor ( event listener object)
+    //
+    //  **Why:**
+    //  To maintain only one event listener ever being active at any given time
+    //
+    //**When:**
+    //  On date change
+    //
+    socket.on("closeCursor", function () {
+       console.log(myCursor.close());
+    });
+
+
+
+    //  ***deleteAppointment***
+    //
+    //  **What:**
+    //   Deletes an appointment
+    //
+    //  **Why:**
+    //  Clinic wants to delete appointment, or denies appointment
+    //
+    //**When:**
+    //  On delete button
+    //
+    socket.on("deleteAppointment", function (appointmentID) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').get(appointmentID).delete().run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                console.log("DELETE APPOINTMENT DATA " + cursor);
+            });
+        });
+    });
+
+    //  ***newAppointmentSlot***
+    //
+    //  **What:**
+    //   Creates a new appointment slot
+    //
+    //  **Why:**
+    //  To make appointment slots available for booking
+    //
+    //  **When:**
+    //  After the clinic clicks " Add new appointment" and confirms an appointment time
+    //
+    socket.on("newAppointmentSlot", function (hour,minute,date,period) {
+        console.log(date);
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            var displayTime;
+            if( hour > 12){
+                if( minute == 0){
+                    displayTime = (hour - 12) + ":" + minute + '0'  + " " + period;
+                }
+                else{
+                    displayTime = (hour - 12) + ":" + minute + " " + period;
+                }
+            }
+            else{
+                if( minute == 0){
+                    displayTime = hour + ":" + minute + '0' + " " + period;
+                }
+                else{
+                    displayTime = hour + ":" + minute + " " + period;
+                }
+
+            }
+
+            r.table('appointments').insert({
+                "patient": null,
+                "time": hour + (minute/60),
+                "viewed": false,
+                "displayTime": displayTime,
+                timestamp: new Date(date+"UTC")
+            }).run(rconnection, function (err, cursor) {
+                if (err) throw err;
+                console.log("NEW APPOINTMENT MADE " + cursor);
+            });
+        });
+
+    });
+
+
+
+
+
+
+    //  ***getDateAppointments***
+    //
+    //  **What:**
+    //   Get all the unbooked appointments for given date
+    //
+    //  **Why:**
+    //  Populate unbooked appointments for booking page
+    //
+    //  **When:**
+    //  On page load
+    //
     socket.on("getDateAppointments", function (date) {
 
         var checkDate = new Date(date +'UTC');
@@ -583,7 +615,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).run(rconnection, function (err, cursor) {
+            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
@@ -597,16 +629,19 @@ io.on("connection", function (socket) {
 
 
 
-    /*
-    Called by:
-            book.js
-    Function:
-            Creates a new patient record
-    Purpose:
-            Create a new patient record, which will then be assigned to an appointment
-    Context:
-        Called after a user submits the form to book a specific appointment
-     */
+
+
+    //  ***createPatient***
+    //
+    //  **What:**
+    //  Create a new patient
+    //
+    //  **Why:**
+    //  Creates a new patient object to be later assigned to the appointment
+    //
+    //  **When:**
+    //  After filling out booking form, and clicking "Book!"
+    //
 
     socket.on("createPatient", function (data) {
         r.connect({
@@ -640,17 +675,17 @@ io.on("connection", function (socket) {
     });
 
 
-    /*
-    Called by:
-            book.js
-    Function:
-            assigns an appointment to a specific patient by pk of each
-    Purpose:
-            connects the patient to the appointment they booked
-    Context:
-            called after a new patient is created
-
-     */
+    //  ***assignAppointment***
+    //
+    //  **What:**
+    //   Assign patient to appointments 'patient' field by id
+    //
+    //  **Why:**
+    //  To book an appointment
+    //
+    //  **When:**
+    //  After a new patient is created from filling out the booking form
+    //
     socket.on("assignAppointment", function (patientID, appointmentID) {
         r.connect({
             host: dbConfig.host,

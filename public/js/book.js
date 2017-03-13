@@ -2,6 +2,18 @@
  * Created by colin on 1/14/2017.
  */
 
+function initMap() {
+    var uluru = {lat:42.296113, lng:-83.047560};
+    var map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 13,
+        center: uluru
+    });
+    var marker = new google.maps.Marker({
+        position: uluru,
+        map: map
+    });
+}
+initMap();
 
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 
@@ -98,14 +110,3 @@ var vm = new Vue({
     }
 });
 
-function initMap() {
-    var uluru = {lat:42.296113, lng:-83.047560};
-    var map = new google.maps.Map(document.getElementById('map'), {
-        zoom: 13,
-        center: uluru
-    });
-    var marker = new google.maps.Marker({
-        position: uluru,
-        map: map
-    });
-}

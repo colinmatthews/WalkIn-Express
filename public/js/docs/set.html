@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>set.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>set.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-comment">/**
+ * Created by colin on 11/8/2016.
+ */</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <h3 id="set-js">Set.js</h3>
+<hr>
+<p>Set.js contains all of the logic for the schedule page. This includes vueJS frontend components
+and socket.IO calls. There is also various helper functions used throughout the code.</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p><strong><em> Variable Initialization </em></strong>
+Creates a new date object that only is formated as : mm/dd/yyyy</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> today = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().toLocaleString([],{<span class="hljs-attr">month</span>:<span class="hljs-string">'2-digit'</span>,<span class="hljs-attr">day</span>:<span class="hljs-string">'2-digit'</span>,<span class="hljs-attr">year</span>:<span class="hljs-string">'numeric'</span>});
+
+<span class="hljs-keyword">var</span> socket = io.connect();
+socket.emit(<span class="hljs-string">"getBookedAppointments"</span>, today);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p><strong><em> Vue JS Components and Functions </em></strong></p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <h4 id="confirm-modal">confirm modal</h4>
+<p>This is the modal that appears when someone attempts to delete a booked appointment</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+<span class="hljs-keyword">var</span> confirmmodal = {
+    <span class="hljs-attr">props</span>: [<span class="hljs-string">'item'</span>, <span class="hljs-string">'showModal2'</span>],
+    <span class="hljs-attr">template</span>: <span class="hljs-string">'#confirmmodal-template'</span>,
+    <span class="hljs-attr">methods</span>: {
+        <span class="hljs-attr">deleteAppointment</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+            <span class="hljs-built_in">console</span>.log(data);
+            socket.emit(<span class="hljs-string">"deleteAppointment"</span>, data);
+        }
+    }
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <h4 id="patient-confirm">patient confirm</h4>
+<p>This is the modal that appears when someone views the patient information on a booked appointment</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> patientmodal = {
+    <span class="hljs-attr">props</span>: [<span class="hljs-string">'item'</span>, <span class="hljs-string">'showModal'</span>],
+    <span class="hljs-attr">template</span>: <span class="hljs-string">'#patientmodal-template'</span>,
+
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <h4 id="appointment">appointment</h4>
+<p>This is the modal that appears when an appointment is rendered</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Vue.component(<span class="hljs-string">'appointment'</span>,{
+    <span class="hljs-attr">props</span>:[<span class="hljs-string">'item'</span>,<span class="hljs-string">'showModal'</span>,<span class="hljs-string">'showModal2'</span>],
+    <span class="hljs-attr">template</span>:<span class="hljs-string">'#appointment'</span>,
+    <span class="hljs-attr">methods</span>:{
+        <span class="hljs-attr">deleteAppointment</span>:<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>)</span>{
+            <span class="hljs-built_in">console</span>.log(data);
+            socket.emit(<span class="hljs-string">"deleteAppointment"</span>,data);
+        }
+    },
+    <span class="hljs-attr">components</span>:{
+        <span class="hljs-string">'patientmodal'</span>:patientmodal,
+        <span class="hljs-string">'confirmmodal'</span>:confirmmodal
+    }
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <h4 id="vm">vm</h4>
+<p>vm is the instance of vue-js that contains the components, and anchors on to the html page. It contains the local data
+, as well as one large function. This function is called when the page is created, and moves through a series of function calls
+between the client and the server in a sequential manner.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> vm = <span class="hljs-keyword">new</span> Vue({
+    <span class="hljs-attr">el</span>: <span class="hljs-string">'#vue-instance'</span>,
+    <span class="hljs-attr">data</span>: {
+        <span class="hljs-attr">inventory</span>: [
+        ],
+        <span class="hljs-attr">showModal</span>:<span class="hljs-literal">false</span>,
+        <span class="hljs-attr">showModal2</span>:<span class="hljs-literal">false</span>
+    },
+    <span class="hljs-attr">methods</span>:{
+        <span class="hljs-attr">deleteLocalContent</span>:<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+           vm.inventory.splice(<span class="hljs-number">0</span>,vm.inventory.length);
+        }
+
+    },
+    <span class="hljs-attr">created</span>: <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>var tempArray is used to store and sort by time the appointments before they are pushed to the front-end local array.
+var index is used to keep track of how many appointments have been added to the temp array</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> tempArray = [];
+        <span class="hljs-keyword">var</span> index =<span class="hljs-number">0</span>;
+
+        socket.on(<span class="hljs-string">"initBookedAppointmentsSet"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">results, date</span>) </span>{
+           <span class="hljs-keyword">for</span>(<span class="hljs-keyword">var</span> e = <span class="hljs-number">0</span>;e&lt;results.length; e++ ) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>vm.inventory</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                tempArray.push({
+
+
+                   <span class="hljs-attr">time</span>: results[e].time,
+                   <span class="hljs-attr">id</span>: results[e].id,
+                   <span class="hljs-attr">displayTime</span>: results[e].displayTime,
+                   <span class="hljs-attr">patient</span>: results[e].patient,
+                   <span class="hljs-attr">DOB</span>: results[e].DOB,
+                   <span class="hljs-attr">phone</span>: results[e].phone,
+                   <span class="hljs-attr">address</span>: results[e].address,
+                   <span class="hljs-attr">name</span>: results[e].name
+               });
+               index ++;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>index++ keeps track of how many appointments have already been added to the array, so that when we
+add the unbooked appointments, they dont override the existing entries in the array.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>           }
+            socket.emit(<span class="hljs-string">"getUnbookedAppointments"</span>,date);
+        });
+
+
+        socket.on(<span class="hljs-string">"initUnbookedAppointmentsSet"</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data, date</span>)</span>{
+            <span class="hljs-built_in">console</span>.log(data.length);
+            <span class="hljs-built_in">console</span>.log(index);
+
+            <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = index; i &lt; (data.length)+ index; i++) {
+                <span class="hljs-built_in">console</span>.log(data.length);
+                tempArray.push({
+                    <span class="hljs-attr">time</span>: data[i-index].time,
+                    <span class="hljs-attr">id</span>: data[i-index].id,
+                    <span class="hljs-attr">patient</span>: data[i-index].patient,
+                    <span class="hljs-attr">displayTime</span>: data[i-index].displayTime
+
+                });
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>tempArray.sort sorts the array by time</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            tempArray.sort(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">a, b</span>)</span>{
+                <span class="hljs-keyword">return</span> a.time &gt; b.time
+            });
+
+            <span class="hljs-keyword">for</span>( <span class="hljs-keyword">var</span> j=<span class="hljs-number">0</span>; j &lt; tempArray.length;j++){
+                vm.inventory.push (tempArray[j]);
+            }
+
+            socket.emit(<span class="hljs-string">'updateRecordsSet'</span>,date);
+        });
+
+        socket.on(<span class="hljs-string">'updateRecordsResultsSet'</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">data</span>)</span>{
+            <span class="hljs-keyword">if</span>(data.old_val == <span class="hljs-literal">null</span>){
+                    vm.inventory.push({
+                        <span class="hljs-attr">time</span>: data.new_val.time,
+                        <span class="hljs-attr">id</span>: data.new_val.id,
+                        <span class="hljs-attr">patient</span>:data.new_val.patient,
+                        <span class="hljs-attr">displayTime</span>:data.new_val.displayTime});
+
+            }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>if an existing appointment is deleted</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(data.new_val == <span class="hljs-literal">null</span>) {
+                <span class="hljs-keyword">for</span> (<span class="hljs-keyword">var</span> i = <span class="hljs-number">0</span>; i &lt; vm.inventory.length; i ++) {
+                    <span class="hljs-keyword">if</span> (vm.inventory[i].id == data.old_val.id) {
+                        vm.inventory.splice(i,<span class="hljs-number">1</span>);
+                    }
+                }
+            }
+        });
+
+        }
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <h4 id="modal">modal</h4>
+<p>This modal appears when you click “ Add new appointment”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>Vue.component(<span class="hljs-string">'modal'</span>, {
+    <span class="hljs-attr">template</span>: <span class="hljs-string">'#modal-template'</span>,
+    <span class="hljs-attr">methods</span>:{
+        <span class="hljs-attr">newAppointmentSlot</span>:<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+            <span class="hljs-keyword">var</span> hour = <span class="hljs-built_in">parseInt</span>(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'hourInput'</span>).value);
+            <span class="hljs-keyword">var</span> minute = <span class="hljs-built_in">parseInt</span>(<span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'minInput'</span>).value);
+            <span class="hljs-keyword">var</span> period = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'period'</span>).value;
+            <span class="hljs-keyword">var</span> date = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'datepicker'</span>).value;
+            <span class="hljs-keyword">if</span>(period == <span class="hljs-string">"PM"</span> &amp;&amp; hour != <span class="hljs-number">12</span>){
+
+                hour = hour + <span class="hljs-number">12.0</span>;
+            }
+            <span class="hljs-keyword">if</span>(period == <span class="hljs-string">"AM"</span> &amp;&amp; hour == <span class="hljs-number">12</span> ){
+                hour = hour +<span class="hljs-number">12.0</span>;
+            }
+
+            <span class="hljs-built_in">console</span>.log(date);
+            socket.emit(<span class="hljs-string">"newAppointmentSlot"</span>,hour,minute,date,period);
+        }
+    }
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <h4 id="modal">modal</h4>
+<p>A second instance of vue-js that is used for the appointment modal</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> modalvm = <span class="hljs-keyword">new</span> Vue({
+    <span class="hljs-attr">el</span>: <span class="hljs-string">'#app'</span>,
+    <span class="hljs-attr">data</span>: {
+        <span class="hljs-attr">showModal</span>: <span class="hljs-literal">false</span>
+    }
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <p>Changes the current date, called by ‘Change Date button</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">changeDate</span>(<span class="hljs-params"></span>)</span>{
+    socket.emit(<span class="hljs-string">"closeCursor"</span>);
+    <span class="hljs-keyword">var</span> date = <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">'datepicker'</span>).value;
+    <span class="hljs-built_in">document</span>.getElementById(<span class="hljs-string">"currentDate"</span>).innerHTML = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(date).toDateString();
+    <span class="hljs-built_in">console</span>.log(date);
+    vm.deleteLocalContent();
+    socket.emit(<span class="hljs-string">'getBookedAppointments'</span>,date);
+}</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-17">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-17">&#182;</a>
+              </div>
+              <p>creates the date picker from jquery-ui and populates with today’s date</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>$( <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>) </span>{
+    $( <span class="hljs-string">"#datepicker"</span> ).datepicker();
+    $(<span class="hljs-string">"#datepicker"</span>).datepicker(<span class="hljs-string">'setDate'</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>());
+
+} (jQuery));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-18">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-18">&#182;</a>
+              </div>
+              <p>triggers when the page is created</p>
+
+            </div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>

@@ -1,33 +1,44 @@
 /**
  * Created by colin on 11/8/2016.
  */
-// initialize dates
-document.getElementById("currentDate").innerHTML = new Date().toDateString();
+//### Set.js
+// ***
+// Set.js contains all of the logic for the schedule page. This includes vueJS frontend components
+// and socket.IO calls. There is also various helper functions used throughout the code.
+
+//*** Variable Initialization ***
+//Creates a new date object that only is formated as : mm/dd/yyyy
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 
-// connect to app.js, get today's appointments
 var socket = io.connect();
 socket.emit("getBookedAppointments", today);
+
+//*** Vue JS Components and Functions ***
+
+//#### confirm modal ####
+// This is the modal that appears when someone attempts to delete a booked appointment
 
 var confirmmodal = {
     props: ['item', 'showModal2'],
     template: '#confirmmodal-template',
-    methods:{
-        deleteAppointment:function(data){
+    methods: {
+        deleteAppointment: function (data) {
             console.log(data);
-            socket.emit("deleteAppointment",data);
+            socket.emit("deleteAppointment", data);
         }
-    },
+    }
 };
 
-
+//#### patient confirm ####
+// This is the modal that appears when someone views the patient information on a booked appointment
 var patientmodal = {
     props: ['item', 'showModal'],
     template: '#patientmodal-template',
 
 };
 
-// Component that appears when a new appointment is made/updated with a patient
+//#### appointment ####
+// This is the modal that appears when an appointment is rendered
 Vue.component('appointment',{
     props:['item','showModal','showModal2'],
     template:'#appointment',
@@ -42,7 +53,10 @@ Vue.component('appointment',{
         'confirmmodal':confirmmodal
     }
 });
-
+// #### vm ####
+// vm is the instance of vue-js that contains the components, and anchors on to the html page. It contains the local data
+//, as well as one large function. This function is called when the page is created, and moves through a series of function calls
+// between the client and the server in a sequential manner.
 var vm = new Vue({
     el: '#vue-instance',
     data: {
@@ -58,7 +72,8 @@ var vm = new Vue({
 
     },
     created: function () {
-
+        // var tempArray is used to store and sort by time the appointments before they are pushed to the front-end local array.
+        // var index is used to keep track of how many appointments have been added to the temp array
         var tempArray = [];
         var index =0;
 
@@ -78,6 +93,8 @@ var vm = new Vue({
                    name: results[e].name
                });
                index ++;
+               // index++ keeps track of how many appointments have already been added to the array, so that when we
+               // add the unbooked appointments, they dont override the existing entries in the array.
            }
             socket.emit("getUnbookedAppointments",date);
         });
@@ -86,9 +103,9 @@ var vm = new Vue({
         socket.on("initUnbookedAppointmentsSet",function(data, date){
             console.log(data.length);
             console.log(index);
+
             for (var i = index; i < (data.length)+ index; i++) {
                 console.log(data.length);
-                //vm.inventory.
                 tempArray.push({
                     time: data[i-index].time,
                     id: data[i-index].id,
@@ -97,7 +114,7 @@ var vm = new Vue({
 
                 });
             }
-
+            // tempArray.sort sorts the array by time
             tempArray.sort(function(a, b){
                 return a.time > b.time
             });
@@ -132,7 +149,8 @@ var vm = new Vue({
         }
 });
 
-// modal for adding appointments
+//#### modal ####
+// This modal appears when you click " Add new appointment"
 Vue.component('modal', {
     template: '#modal-template',
     methods:{
@@ -155,7 +173,8 @@ Vue.component('modal', {
     }
 });
 
-
+//#### modal ####
+// A second instance of vue-js that is used for the appointment modal
 var modalvm = new Vue({
     el: '#app',
     data: {

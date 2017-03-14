@@ -17,7 +17,7 @@
 
 .modal-container {
     width: 600px;
-    margin: 0px auto;
+    margin: auto;
     padding: 20px 30px;
     background-color: #fff;
     border-radius: 2px;
@@ -47,4 +47,28 @@
 .modal-leave-active .modal-container {
     -webkit-transform: scale(1.1);
     transform: scale(1.1);
+}
+
+@media (max-width: 600px) {
+
+    .modal-mask{
+        position: fixed;
+    }
+
+    .modal-container{
+        width: 300px;
+        height: 550px;
+
+    }
+
+    .btn{
+        padding: 5px;
+    }
+
+    label{
+        display: none;
+    }
+    .mobileLabel{
+        display: inherit;
+    }
 }

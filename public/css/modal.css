@@ -24,6 +24,8 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, .33);
     transition: all .3s ease;
     font-family: Helvetica, Arial, sans-serif;
+    max-height: 700px;
+    overflow-y: auto;
 }
 
 .modal-header h3 {
@@ -56,8 +58,9 @@
     }
 
     .modal-container{
-        width: 300px;
-        height: 550px;
+        width: 90%;
+        height: 100%;
+        max-height: 95%
 
     }
 
@@ -70,5 +73,12 @@
     }
     .mobileLabel{
         display: inherit;
+    }
+    #map{
+        display: none;
+    }
+
+    .row{
+        width: 70%
     }
 }

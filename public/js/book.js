@@ -39,34 +39,7 @@ var modal = {
     props:['item','showModal'],
     template: '#modal-template',
     methods:{
-
-        //  ***bookAppointment***
-        //
-        //  **What:**
-        //   Sends a request to the server to create a new patient based on the input information, and assigns that patient to this appointment
-        //
-        //  **Why:**
-        //  To facilitate booking appointments
-        //
-        //**When:**
-        //  After a patient clicks "Book"
-        //
-
-        bookAppointment:function(appointmentID){
-            console.log("here");
-            var data={
-                "DOB":  document.getElementById("dobInput").value ,
-                "address":  document.getElementById("addressInput").value,
-                "doctor_id": "12345",
-                "name":  document.getElementById("nameInput").value ,
-                "phone":  document.getElementById("phoneInput").value
-            };
-            socket.emit("createPatient",data);
-            socket.on("newPatientID",function (patientID) {
-                console.log(patientID);
-                socket.emit("assignAppointment",patientID,appointmentID);
-            });
-        },
+        
         //  ***enableSubmit ***
         //
         //  **What:**
@@ -80,7 +53,6 @@ var modal = {
         //
 
         enableSubmit:function () {
-            console.log("enableSubmit");
             if(document.getElementById("submitCheck").checked){
                 document.getElementById("submit").disabled = false;
             }
@@ -88,6 +60,102 @@ var modal = {
                 document.getElementById("submit").disabled = true;
             }
 
+        },
+
+        //  ***validateForm ***
+        //
+        //  **What:**
+        //   Validates the user's input into the form on the client side, and if valid books the appointment
+        //
+        //  **Why:**
+        //  To ensure input is as clean as possible
+        //
+        //  **When:**
+        //  When the user clicks "Book!"
+        //
+
+        validateForm:function(appointmentID){
+
+            var valid = true;
+            var DOB = document.getElementById("dobInput").value;
+            var address =  document.getElementById("addressInput").value;
+            var name =  document.getElementById("nameInput").value ;
+            var phone =  document.getElementById("phoneInput").value;
+
+            var valiDate = moment(DOB);
+            if (!valiDate.isValid()) {
+                valid = false;
+
+                document.getElementById("DOB-alert").className =
+                    document.getElementById("DOB-alert").className.replace
+                    ( /(?:^|\s)hide(?!\S)/g , '' )
+
+            }
+            if( name == ""){
+                valid = false;
+                document.getElementById("name-alert").className =
+                    document.getElementById("name-alert").className.replace
+                    ( /(?:^|\s)hide(?!\S)/g , '' )
+            }
+
+            if(!phone.match(/^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$/))
+            {
+                valid = false;
+                document.getElementById("phone-alert").className =
+                    document.getElementById("phone-alert").className.replace
+                    ( /(?:^|\s)hide(?!\S)/g , '' )
+            }
+
+            if( address == ""){
+                valid = false;
+                document.getElementById("address-alert").className =
+                    document.getElementById("address-alert").className.replace
+                    ( /(?:^|\s)hide(?!\S)/g , '' )
+            }
+
+            if(valid){
+                var data={
+                    "DOB":  document.getElementById("dobInput").value ,
+                    "address":  document.getElementById("addressInput").value,
+                    "doctor_id": "12345",
+                    "name":  document.getElementById("nameInput").value ,
+                    "phone":  document.getElementById("phoneInput").value
+                };
+                socket.emit("checkAvailability", appointmentID);
+
+                socket.on("checkAvailabilityResults",function(result){
+                    console.log(result);
+                    if(result== null) {
+                        socket.emit("createPatient", data);
+                        socket.on("newPatientID", function (patientID) {
+                            console.log(patientID);
+                            socket.emit("assignAppointment", patientID, appointmentID);
+                        });
+                        // // redirect to success page
+                    }
+                    else{
+                        // notify user someone else has already booked that appointment
+                    }
+                });
+
+            }
+
+        },
+
+        //  ***hideElement ***
+        //
+        //  **What:**
+        //   adds the "hide" class to any element passed into it, which hides it from the front end
+        //
+        //  **Why:**
+        //  To remove error messages
+        //
+        //  **When:**
+        //  When the user dismisses an error message
+        //
+
+        hideElement:function (elementName) {
+            document.getElementById(elementName).className += " hide";
         }
     }
 };

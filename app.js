@@ -712,7 +712,40 @@ io.on("connection", function (socket) {
 
     });
 
+    //  ***checkAvailability***
+    //
+    //  **What:**
+    //   Checks to see if an appointment has a patient assigned to it
+    //
+    //  **Why:**
+    //  When booking appointments, this check ensures that two patients cant book the same appointment
+    //
+    //  **When:**
+    //  After the form data from the book page is validated
+    //
 
+    socket.on("checkAvailability",function (appointmentID) {
+        r.connect({
+            host: dbConfig.host,
+            port: dbConfig.port,
+            user: dbConfig.user,
+            password: dbConfig.password,
+            db: dbConfig.db,
+            ssl: {
+                ca: dbConfig.ssl.ca
+            }
+        }, function (err, conn) {
+            if (err) throw err;
+            rconnection = conn;
+            r.table('appointments').get(appointmentID)("patient").run(rconnection, function (err, result) {
+                if (err) throw err;
+                console.log(result);
+                socket.emit("checkAvailabilityResults", result);
+
+            });
+        });
+
+    });
 
 
 });

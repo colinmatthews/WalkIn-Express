@@ -81,7 +81,7 @@ var modal = {
 
         enableSubmit:function () {
             console.log("enableSubmit");
-            if(document.getElementById("submitCheck").checked == true){
+            if(document.getElementById("submitCheck").checked){
                 document.getElementById("submit").disabled = false;
             }
             else{

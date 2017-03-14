@@ -42,6 +42,11 @@ app.get('/set',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/set.html');
 });
 
+app.get('/privacy', function (req, res) {
+    res.sendFile(__dirname + '/views/privacy.html');
+});
+
+
 app.get('/dayview',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/dayview.html');
 });

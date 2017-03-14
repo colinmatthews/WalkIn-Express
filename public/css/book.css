@@ -205,3 +205,22 @@ footer {
 p.copyright {
     margin: 15px 0 0;
 }
+.section-heading {
+    padding-top:15px;
+    padding-left:15px;
+    margin-bottom: 5px;
+}
+.section-text{
+    padding-left:25px;
+}
+.contactInfo{
+   padding-bottom:  10px;
+}
+#vue-instance{
+    float:left;
+    padding-top: 15px;
+}
+.emergency{
+    font-size: 16px;
+    color: #0c8241;
+}

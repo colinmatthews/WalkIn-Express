@@ -17,7 +17,10 @@ var SparkPost = require('sparkpost');
 var client = new SparkPost('15756eb2514dee0c0c069401c1f49a99456f790c');
 
 
-var port = 8000;
+var port = process.env.PORT;
+http.listen(port || 8000, function(){
+    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
+});
 // Stormpath is used for our user authentication
 app.use(stormpath.init(app, {
     website:true
@@ -51,7 +54,7 @@ app.get('/dayview',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/dayview.html');
 });
 
-http.listen(port);
+//http.listen(port);
 
 
 
@@ -751,5 +754,4 @@ io.on("connection", function (socket) {
 
 });
 
-console.log("App listening on port" + port);
 

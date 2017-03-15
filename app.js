@@ -258,7 +258,8 @@ io.on("connection", function (socket) {
     //  Called when the "Decline" button on the dashboard is clicked.
     //
 
-    socket.on('denyAppointment',function(userEmail){
+    socket.on('denyAppointment',function(userEmail, err){
+        if(err)throw err;
         console.log("deny");
 
         client.transmissions.send({

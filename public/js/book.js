@@ -39,7 +39,7 @@ var modal = {
     props:['item','showModal'],
     template: '#modal-template',
     methods:{
-        
+
         //  ***enableSubmit ***
         //
         //  **What:**

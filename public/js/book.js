@@ -131,10 +131,10 @@ var modal = {
                             console.log(patientID);
                             socket.emit("assignAppointment", patientID, appointmentID);
                         });
-                        // // redirect to success page
+                        window.location.replace("/");
                     }
                     else{
-                        // notify user someone else has already booked that appointment
+                        window.location.replace("/");
                     }
                 });
 

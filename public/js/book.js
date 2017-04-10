@@ -140,11 +140,12 @@ var modal = {
                         socket.on("newPatientID", function (patientID) {
                             console.log(patientID);
                             socket.emit("assignAppointment", patientID, appointmentID);
+                            window.location.replace("/success");
                         });
 
                     }
                     else{
-
+                        window.location.replace("/failure");
                     }
 
                 });

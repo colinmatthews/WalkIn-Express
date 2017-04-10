@@ -33,9 +33,18 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 //Adding `stormpath.loginRequired` make this route only accessible to logged in users
-app.get('/book', stormpath.loginRequired,function (req, res) {
+app.get('/book',function (req, res) {
     res.sendFile(__dirname + '/views/book.html');
 });
+
+app.get('/success',function (req, res) {
+    res.sendFile(__dirname + '/views/success.html');
+});
+
+app.get('/failure',function (req, res) {
+    res.sendFile(__dirname + '/views/failure.html');
+});
+
 // `groupsRequired[('clinics)]` makes this route only accessible to users who are a part of the clinics group
 app.get('/dashboard',stormpath.groupsRequired(['clinics']), function (req, res) {
     res.sendFile(__dirname + '/views/dashboard.html');

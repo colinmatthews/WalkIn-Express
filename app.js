@@ -33,7 +33,7 @@ app.get('/', function (req, res) {
     res.sendFile(__dirname + '/views/index.html');
 });
 //Adding `stormpath.loginRequired` make this route only accessible to logged in users
-app.get('/book', stormpath.loginRequired, function (req, res) {
+app.get('/book', stormpath.loginRequired,function (req, res) {
     res.sendFile(__dirname + '/views/book.html');
 });
 // `groupsRequired[('clinics)]` makes this route only accessible to users who are a part of the clinics group
@@ -231,7 +231,8 @@ io.on("connection", function (socket) {
     //
 
 
-    socket.on('confirmAppointment',function(userEmail){
+    socket.on('confirmAppointment',function(userEmail,err){
+        if(err)throw err;
         console.log("confirm");
 
         client.transmissions.send({
@@ -242,7 +243,7 @@ io.on("connection", function (socket) {
                 '<p> Your appointment has been confirmed!</p><br><p>Thanks for using Walk-In Express!</p></body></html>'
             },
             recipients: [
-                {address: userEmail}
+                {address:userEmail}
             ]
         });
 
@@ -264,10 +265,10 @@ io.on("connection", function (socket) {
     socket.on('denyAppointment',function(userEmail, err){
         if(err)throw err;
         console.log("deny");
-
+        console.log(userEmail);
         client.transmissions.send({
             content: {
-                from: 'testing@sparkpostbox.com',
+                from: 'testing@walkinexpress.ca',
                 subject: 'Your Appointment Was Denied',
                 html:'<html><body>' +
                 '<p> There was a problem with your information when trying to book an appointment. Please visit the clinic to seek care while we try to sort this out!</p><br><p>Thanks for using Walk-In Express!</p></body></html>'
@@ -670,7 +671,8 @@ io.on("connection", function (socket) {
                 "address": data.address,
                 "doctor_id": data.doctor_id,
                 "name": data.name,
-                "phone": data.phone
+                "phone": data.phone,
+                "email":data.email
             }).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 console.log("NEW PATIENT MADE ");

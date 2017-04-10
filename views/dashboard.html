@@ -12,9 +12,11 @@
 
 
     <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-
+    <link href="../public/external/sb-admin-2.css" rel="stylesheet">
     <link rel="stylesheet" href ="/public/css/base.css">
     <link rel="stylesheet" href ="/public/css/dashboard.css">
+
+
 
 
 
@@ -120,10 +122,10 @@
         </div>
         <div class="panel-footer">
             <button style ="float:right;"type="button" class="btn btn-primary" onclick="this.parentElement.parentElement.remove()"
-                    @click="setViewed(item.id)" v-on:click="confirmAppointment()" >Accept</button>
+                    @click="setViewed(item.id)" v-on:click="confirmAppointment(item.email)" >Accept</button>
 
             <button  type="button" class="btn btn-danger" onclick="this.parentElement.parentElement.remove()"
-                     v-on:click="denyAppointment(item.id, item.time, item.displayTime)">Deny</button>
+                     v-on:click="denyAppointment(item.id, item.time, item.displayTime, item.email)">Deny</button>
 
         </div>
     </div>

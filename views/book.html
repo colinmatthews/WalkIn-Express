@@ -3,6 +3,7 @@
 
 <head>
     <script src="/socket.io/socket.io.js"></script>
+    <script src="/public/external/moment.js"></script>
 
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -15,6 +16,8 @@
 
     <script src="../public/external/jquery-ui-1.12.1/external/jquery/jquery.js"></script>
 
+
+
     <!-- Bootstrap Core CSS -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
@@ -24,6 +27,7 @@
 
     <link href="../public/css/book.css" rel="stylesheet">
     <link href="../public/css/modal.css" rel="stylesheet">
+
 
 
 </head>
@@ -163,6 +167,13 @@
                             <p> Invalid Date. Must follow MM/DD/YYYY format.</p>
                         </div>
 
+                    <div id="email-alert" class="alert alert-warning alert-dismissible hide" role="alert">
+                        <button type="button" class = "close" v-on:click="hideElement('email-alert')" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                        <p> Invalid email. Must follow text@address.domain format.</p>
+                    </div>
+
 
                     <div id="name-alert" class="alert alert-warning alert-dismissible hide" role="alert">
                         <button type="button"  class = "close" v-on:click="hideElement('name-alert')" >
@@ -212,10 +223,17 @@
                                 <input type="text" class="form-control" id="addressInput" placeholder="Address:">
                             </div>
 
+                            <div class="form-group">
+                                <label for="emailInput">Email Address:</label>
+                                <input type="text" class="form-control" id="emailInput" placeholder="Email:">
+                            </div>
+
                             <div class="form-group" style="padding-bottom: 30px;">
                                 <label for="dobInput">Date of Birth</label>
                                 <input type="text" class="form-control" id="dobInput" placeholder="DOB:(MM/DD/YYYY)">
                             </div>
+
+
 
                             <div class="form-group" style="padding-bottom: 30px;">
                                 <label class="mobileLabel">I agree to the <a href="/privacy" target="_blank">privacy policy. </a>

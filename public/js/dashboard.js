@@ -67,8 +67,12 @@ Vue.component('new-appt',{
         //**When:**
         //  When an appointment is accepted
         //
-        confirmAppointment:function(){
-            socket.emit('confirmAppointment','matthews.colin21@gmail.com');
+        confirmAppointment:function(email){
+
+            console.log(email);
+            socket.emit("confirmAppointment",email);
+
+
         },
         //  ***denyAppointment***
         //
@@ -82,8 +86,9 @@ Vue.component('new-appt',{
         //**When:**
         //  When an appointment is denied
         //
-        denyAppointment:function(appointmentID, time, displayTime){
-            socket.emit('denyAppointment','matthews.colin21@gmail.com');
+        denyAppointment:function(appointmentID, time, displayTime, email){
+            console.log(email);
+            socket.emit('denyAppointment',email);
             socket.emit('deleteAppointment',appointmentID);
             socket.emit('remakeAppointmentSlot',time,today,displayTime);
         }
@@ -119,7 +124,7 @@ var vm = new Vue({
                     vm.inventory.push({
                         time: data[i].time, id: data[i].id, DOB: data[i].DOB,
                         phone: data[i].phone, address: data[i].address, name: data[i].name, patient: data[i].patient,
-                        displayTime:data[i].displayTime
+                        displayTime:data[i].displayTime, email:data[i].email
                     });
 
                 }
@@ -165,6 +170,7 @@ var vm = new Vue({
                                 time: data.new_val.time,
                                 displayTime:data.new_val.displayTime,
                                 id: data.new_val.id,
+                                email: data.new_val.email,
                                 DOB: results[n].DOB,
                                 phone: results[n].phone,
                                 address: results[n].address,

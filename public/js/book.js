@@ -26,6 +26,7 @@ initMap();
 
 //*** Variable Initialization ***
 //Creates a new date object that only is formated as : mm/dd/yyyy
+
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 var socket = io.connect();
 socket.emit("getDateAppointments",today);
@@ -81,6 +82,7 @@ var modal = {
             var address =  document.getElementById("addressInput").value;
             var name =  document.getElementById("nameInput").value ;
             var phone =  document.getElementById("phoneInput").value;
+            var email = document.getElementById("emailInput").value;
 
             var valiDate = moment(DOB);
             if (!valiDate.isValid()) {
@@ -113,29 +115,38 @@ var modal = {
                     ( /(?:^|\s)hide(?!\S)/g , '' )
             }
 
+            if(!email.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)){
+                valid = false;
+                document.getElementById("email-alert").className =
+                    document.getElementById("email-alert").className.replace
+                    ( /(?:^|\s)hide(?!\S)/g , '' )
+            }
+
             if(valid){
                 var data={
                     "DOB":  document.getElementById("dobInput").value ,
                     "address":  document.getElementById("addressInput").value,
                     "doctor_id": "12345",
                     "name":  document.getElementById("nameInput").value ,
-                    "phone":  document.getElementById("phoneInput").value
+                    "phone":  document.getElementById("phoneInput").value,
+                    "email": document.getElementById("emailInput").value
                 };
                 socket.emit("checkAvailability", appointmentID);
 
                 socket.on("checkAvailabilityResults",function(result){
                     console.log(result);
-                    if(result== null) {
+                    if(result == null) {
                         socket.emit("createPatient", data);
                         socket.on("newPatientID", function (patientID) {
                             console.log(patientID);
                             socket.emit("assignAppointment", patientID, appointmentID);
                         });
-                        window.location.replace("/");
+
                     }
                     else{
-                        window.location.replace("/");
+
                     }
+
                 });
 
             }

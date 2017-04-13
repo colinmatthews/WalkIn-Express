@@ -246,7 +246,7 @@ io.on("connection", function (socket) {
 
         client.transmissions.send({
             content: {
-                from: 'testing@sparkpostbox.com',
+                from: 'testing@walkinexpress.ca',
                 subject: 'Your Appointment Was Confirmed!',
                 html:'<html><body>' +
                 '<p> Your appointment has been confirmed!</p><br><p>Thanks for using Walk-In Express!</p></body></html>'

@@ -67,10 +67,12 @@ Vue.component('new-appt',{
         //**When:**
         //  When an appointment is accepted
         //
-        confirmAppointment:function(email){
+        confirmAppointment:function(email, id){
 
             console.log(email);
             socket.emit("confirmAppointment",email);
+            socket.emit("setViewed",id);
+
 
 
         },
@@ -149,7 +151,7 @@ var vm = new Vue({
             /* if an existing appointment is deleted
 
              */
-            if(data.new_val == null) {
+            if(data.new_val == null || data.new_val.viewed == true) {
                 for (var i = 0; i < vm.inventory.length; i ++) {
                     if (vm.inventory[i].id == data.old_val.id) {
                         vm.inventory.splice(i,1);
@@ -170,7 +172,7 @@ var vm = new Vue({
                                 time: data.new_val.time,
                                 displayTime:data.new_val.displayTime,
                                 id: data.new_val.id,
-                                email: data.new_val.email,
+                                email: results[n].email,
                                 DOB: results[n].DOB,
                                 phone: results[n].phone,
                                 address: results[n].address,

@@ -182,11 +182,16 @@ h6 {
     ul.banner-social-buttons > li:last-child {
         margin-bottom: 0;
     }
+    .navbar-brand>img {
+        margin-left: 0%;
+    }
+
+
 }
 
 footer {
     padding: 50px 0;
-    background-color: #f8f8f8;
+    background-color: #ffffff;
 }
 
 p.copyright {

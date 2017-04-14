@@ -42,13 +42,7 @@
             <a class="navbar-brand topnav" href="/"><img src="/public/img/logo.png"></a>
         </div>
         <!-- Collect the nav links, forms, and other content for toggling -->
-        <div class="nav navbar-nav navbar-right">
-            <form action="/logout" method="POST" id="logout_form">
-                <ul class="nav navbar-right top-nav">
-                    <li><a onclick="document.getElementById('logout_form').submit();"><i class="fa fa-fw fa-power-off"></i> Logout</a></li>
-                </ul>
-            </form>
-        </div>
+
         <!-- /.navbar-collapse -->
     </div>
     <!-- /.container -->
@@ -229,15 +223,15 @@
                             </div>
 
                             <div class="form-group" style="padding-bottom: 30px;">
-                                <label for="dobInput">Date of Birth</label>
+                                <label for="dobInput">Date of Birth(MM/DD/YYYY)</label>
                                 <input type="text" class="form-control" id="dobInput" placeholder="DOB:(MM/DD/YYYY)">
                             </div>
 
 
 
                             <div class="form-group" style="padding-bottom: 30px;">
+                                <input type="checkbox" id="submitCheck" v-on:click="enableSubmit()">
                                 <label class="mobileLabel">I agree to the <a href="/privacy" target="_blank">privacy policy. </a>
-                                    <input type="checkbox" id="submitCheck" v-on:click="enableSubmit()">
                                 </label>
 
                             </div>

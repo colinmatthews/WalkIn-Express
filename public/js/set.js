@@ -9,6 +9,7 @@
 //*** Variable Initialization ***
 //Creates a new date object that only is formated as : mm/dd/yyyy
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+document.getElementById("currentDate").innerHTML = new Date().toDateString();
 
 var socket = io.connect();
 socket.emit("getBookedAppointments", today);
@@ -62,25 +63,31 @@ var vm = new Vue({
     data: {
         inventory: [
         ],
+        tempArray:[],
         showModal:false,
         showModal2:false
     },
     methods:{
         deleteLocalContent:function(){
-           vm.inventory.splice(0,vm.inventory.length);
+            vm.inventory.splice(0,vm.inventory.length);
+            vm.tempArray.splice(0, vm.tempArray.length);
         }
-
     },
     created: function () {
         // var tempArray is used to store and sort by time the appointments before they are pushed to the front-end local array.
-        // var index is used to keep track of how many appointments have been added to the temp array
-        var tempArray = [];
+        // tempArray is a property of vm so that it can be accessed by methods, such as deleteLocalContent. If it is setup as
+        // a local array inside this scope, we wont be able to clear it using the delete method, and will end up adding duplicate dates.
+        //
+        // var index is used to keep track of how many appointments have been added to the temp array. It is used to
+        // keep track of the last filled position in the array. Because we add bookedAppointments and then unbooked appointments,
+        // we need to ensure that we don't override the booked appointments already in the array when adding unbooked.
         var index =0;
 
         socket.on("initBookedAppointmentsSet", function (results, date) {
-           for(var e = 0;e<results.length; e++ ) {
-               //vm.inventory
-                tempArray.push({
+            console.log ( "index:" + index);
+            for(var e = 0;e<results.length; e++ ) {
+                //vm.inventory.push({
+                vm.tempArray.push({
 
 
                    time: results[e].time,
@@ -95,7 +102,7 @@ var vm = new Vue({
                index ++;
                // index++ keeps track of how many appointments have already been added to the array, so that when we
                // add the unbooked appointments, they dont override the existing entries in the array.
-           }
+            }
             socket.emit("getUnbookedAppointments",date);
         });
 
@@ -106,7 +113,8 @@ var vm = new Vue({
 
             for (var i = index; i < (data.length)+ index; i++) {
                 console.log(data.length);
-                tempArray.push({
+                //vm.inventory.push({
+                 vm.tempArray.push({
                     time: data[i-index].time,
                     id: data[i-index].id,
                     patient: data[i-index].patient,
@@ -114,14 +122,17 @@ var vm = new Vue({
 
                 });
             }
+
             // tempArray.sort sorts the array by time
-            tempArray.sort(function(a, b){
+
+            vm.tempArray.sort(function(a, b){
                 return a.time > b.time
             });
 
-            for( var j=0; j < tempArray.length;j++){
-                vm.inventory.push (tempArray[j]);
+            for( var j=0; j < vm.tempArray.length;j++){
+                vm.inventory.push (vm.tempArray[j]);
             }
+
 
             socket.emit('updateRecordsSet',date);
         });
@@ -183,12 +194,12 @@ var modalvm = new Vue({
 });
 
 
-// Changes the current date, called by 'Change Date button
+// Changes the current date, called by 'Change Date' button
 function changeDate(){
     socket.emit("closeCursor");
     var date = document.getElementById('datepicker').value;
-    document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     console.log(date);
+    document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     vm.deleteLocalContent();
     socket.emit('getBookedAppointments',date);
 }

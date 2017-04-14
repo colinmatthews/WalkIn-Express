@@ -35,6 +35,7 @@ h6 {
 
 }
 .navbar-brand>img {
+    margin-left: -25%;
     height: 100%;
     float:left;
     position: relative;
@@ -42,6 +43,7 @@ h6 {
     transform: translateY(-50%);
 
 }
+
 
 .navbar-signup{
     box-shadow: inset 0px 0px 0px 3px #69C170;
@@ -57,7 +59,7 @@ h6 {
     padding-bottom: 50px;
     text-align: center;
     color: #f8f8f8;
-    background: url(../img/intro-bg.jpg) no-repeat center center;
+    background: url(../img/intro-bg1.jpg) no-repeat center center;
     background-size: cover;
 }
 

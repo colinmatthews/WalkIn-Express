@@ -233,7 +233,7 @@ var vm = new Vue({
             }
 
             // if an existing appointment is deleted
-            else if(data.new_val == null) {
+            else if(data.new_val == null || data.new_val.patient != null) {
                 for (var i = 0; i < vm.inventory.length; i ++) {
                     if (vm.inventory[i].id == data.old_val.id) {
                         vm.inventory.splice(i,1);

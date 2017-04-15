@@ -17,6 +17,12 @@ var stormpath = require('express-stormpath');
 var SparkPost = require('sparkpost');
 var client = new SparkPost('15756eb2514dee0c0c069401c1f49a99456f790c');
 
+var NeverBounce = require('neverbounce')({
+    apiKey: 'Bp4jC20K',
+    apiSecret: 'Yzu8C125gtbYR4F'
+});
+
+
 app.use(function (req, res, next) {
     var sslUrl;
 
@@ -774,6 +780,38 @@ io.on("connection", function (socket) {
 
             });
         });
+
+    });
+
+    //  ***validateEmail***
+    //
+    //  **What:**
+    //   Validates an email using neverbounce
+    //
+    //  **Why:**
+    //  To validate that the email that was entered exists
+    //
+    //  **When:**
+    //  After the regex checks are applied
+    //
+
+    socket.on("validateEmail",function (email) {
+        NeverBounce.single.verify(email).then(
+            function(result) {
+                if(result.is(0)){
+                    socket.emit('validEmail');
+                }
+                else{
+                    console.log(result);
+                    socket.emit('invalidEmail');
+                }
+            },
+            function(error) {
+                // errors will bubble up through the reject method of the promise.
+                // you'll want to console.log them otherwise it'll fail silently
+                console.log(error);
+            }
+        );
 
     });
 

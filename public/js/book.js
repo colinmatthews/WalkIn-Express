@@ -123,35 +123,48 @@ var modal = {
             }
 
             if(valid){
-                var data={
-                    "DOB":  document.getElementById("dobInput").value ,
-                    "address":  document.getElementById("addressInput").value,
-                    "doctor_id": "12345",
-                    "name":  document.getElementById("nameInput").value ,
-                    "phone":  document.getElementById("phoneInput").value,
-                    "email": document.getElementById("emailInput").value
-                };
-                socket.emit("checkAvailability", appointmentID);
+                socket.emit('validateEmail', email);
 
-                socket.on("checkAvailabilityResults",function(result){
-                    console.log(result);
-                    if(result == null) {
-                        socket.emit("createPatient", data);
-                        socket.on("newPatientID", function (patientID) {
-                            console.log(patientID);
-                            socket.emit("assignAppointment", patientID, appointmentID);
-                            window.location.replace("/success");
-                        });
+                socket.on('validEmail', function () {
 
-                    }
-                    else{
-                        window.location.replace("/failure");
-                    }
+                    var data={
+                        "DOB":  DOB,
+                        "address":  address,
+                        "name": name,
+                        "phone": phone,
+                        "email": email
+                    };
+
+                    socket.emit("checkAvailability", appointmentID);
+
+                    socket.on("checkAvailabilityResults",function(result){
+                        console.log(result);
+                        if(result == null) {
+                            socket.emit("createPatient", data);
+                            socket.on("newPatientID", function (patientID) {
+                                console.log(patientID);
+                                socket.emit("assignAppointment", patientID, appointmentID);
+                                window.location.replace("/success");
+                            });
+
+                        }
+                        else{
+                            window.location.replace("/failure");
+                        }
+
+                    });
 
                 });
 
-            }
+                socket.on('invalidEmail', function () {
 
+                    valid = false;
+                    document.getElementById("invalidEmail-alert").className =
+                        document.getElementById("invalidEmail-alert").className.replace
+                        ( /(?:^|\s)hide(?!\S)/g , '' )
+
+                });
+            }
         },
 
         //  ***hideElement ***

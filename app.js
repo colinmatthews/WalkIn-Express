@@ -12,10 +12,23 @@ var r = require('rethinkdb');
 var fs = require("fs")
 var stormpath = require('express-stormpath');
 
+
 // Sparkpost is used for sending emails to the patients
 var SparkPost = require('sparkpost');
 var client = new SparkPost('15756eb2514dee0c0c069401c1f49a99456f790c');
 
+app.use(function (req, res, next) {
+    var sslUrl;
+
+    if (process.env.NODE_ENV === 'production' &&
+        req.headers['x-forwarded-proto'] !== 'https') {
+
+        sslUrl = ['https://www.walkinexpress.ca', req.url].join('');
+        return res.redirect(sslUrl);
+    }
+
+    return next();
+});
 
 var port = process.env.PORT;
 http.listen(port || 8000, function(){
@@ -26,6 +39,8 @@ app.use(stormpath.init(app, {
     website:true
 
 }));
+
+
 
 app.use("/public", express.static(__dirname + '/public'));
 

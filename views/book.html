@@ -68,7 +68,7 @@
 
 
             <div id="vue-instance">
-                <appointment v-for="item in inventory" v-bind:item="item"></appointment>
+                <appointment v-for="item in inventory":key="item.id" v-bind:item="item" ></appointment>
             </div>
         </div>
 

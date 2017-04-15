@@ -129,6 +129,7 @@ var modal = {
 
                     var data={
                         "DOB":  DOB,
+                        "doctor_id":"123ABC",
                         "address":  address,
                         "name": name,
                         "phone": phone,

@@ -35,7 +35,9 @@ h6 {
 
 }
 .navbar-brand>img {
-    margin-left: -25%;
+    max-height: 70%;
+    margin-top: 2%;
+    margin-left: -35%;
     height: 100%;
     float:left;
     position: relative;
@@ -163,6 +165,9 @@ h6 {
     ul.banner-social-buttons {
         float: left;
         margin-top: 15px;
+    }
+    .navbar-brand > img{
+        margin-left: 0;
     }
 }
 

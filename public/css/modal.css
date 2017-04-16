@@ -73,6 +73,10 @@
     label{
         display: none;
     }
+
+    #dobInput{
+        display: block;
+    }
     .mobileLabel{
         display: inherit;
     }

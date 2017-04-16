@@ -65,6 +65,10 @@ h6 {
     box-shadow: inset 0px 0px 0px 3px #69C170;
 
 }
+.book-btn{
+    padding: 2%;
+}
+
 .lead {
     font-size: 18px;
     font-weight: 400;
@@ -188,9 +192,19 @@ h6 {
     .navbar-brand > img{
         margin-left: 0;
     }
+
+
+}
+
+@media(max-width:1354px) {
+    .navbar-brand > img{
+        margin-left: 0;
+    }
+
 }
 
 @media(max-width:767px) {
+
     .banner h2 {
         margin: 0;
         text-shadow: 2px 2px 3px rgba(0,0,0,0.6);

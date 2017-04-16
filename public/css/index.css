@@ -171,6 +171,13 @@ h6 {
     }
 }
 
+@media(max-width:1354px) {
+    .navbar-brand > img{
+        margin-left: 0;
+    }
+
+}
+
 @media(max-width:767px) {
     .banner h2 {
         margin: 0;

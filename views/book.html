@@ -233,7 +233,7 @@
 
                                 <div class="form-input">
                                     <label for="dobInput">Date of Birth(MM/DD/YYYY)</label>
-                                    <input type="date" class="form-control" id="dobInput" placeholder="DOB:(MM/DD/YYYY)">
+                                    <input type="text" class="form-control" id="dobInput" placeholder="DOB:(MM/DD/YYYY)">
                                 </div>
 
 
@@ -250,8 +250,8 @@
 
                             <div class="modal-footer">
                                 <div id="footer">
-                            <button class="btn btn-danger" @click="$emit('close')">Close Without Booking</button>
-                            <button  id ="submit" class="btn btn-primary" style="float:right;" v-on:click="validateForm(item.id)" disabled>Book!</button>
+                            <button class="btn btn-danger book-btn" @click="$emit('close')">Close Without Booking</button>node
+                            <button  id ="submit" class="btn btn-primary book-btn" style="float:right;" v-on:click="validateForm(item.id)" disabled>Book!</button>
                             <!-- v-on:click="bookAppointment(item.id)"=" -->
                                     <!-- @click="$emit('close')" -->
                                 </div>

@@ -29,7 +29,10 @@ initMap();
 
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 var socket = io.connect();
-socket.emit("getDateAppointments",today);
+if(today != undefined){
+    socket.emit("getDateAppointments",today);
+}
+
 
 
 //*** Vue JS Components and Functions ***

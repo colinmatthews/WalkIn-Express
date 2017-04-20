@@ -9,9 +9,14 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var path = require('path');
 var r = require('rethinkdb');
-var fs = require("fs")
-var stormpath = require('express-stormpath');
+var fs = require("fs");
+var passport = require('passport');
+var Auth0Strategy = require('passport-auth0');
+var cookieParser = require('cookie-parser');
+var bodyParser = require('body-parser');
+var session = require('express-session');
 
+// Initialize services
 
 // Sparkpost is used for sending emails to the patients
 var SparkPost = require('sparkpost');
@@ -22,7 +27,103 @@ var NeverBounce = require('neverbounce')({
     apiSecret: 'Yzu8C125gtbYR4F'
 });
 
+var routes = require('./routes/indexRoutes');
+var user = require('./routes/dashboardRoute');
 
+var strategy = new Auth0Strategy({
+    domain:       process.env.AUTH0_DOMAIN,
+    clientID:     process.env.AUTH0_CLIENT_ID,
+    clientSecret: process.env.AUTH0_CLIENT_SECRET,
+    callbackURL:  process.env.AUTH0_CALLBACK_URL || 'http://localhost:3000/callback'
+}, function(accessToken, refreshToken, extraParams, profile, done) {
+    // accessToken is the token to call Auth0 API (not needed in the most cases)
+    // extraParams.id_token has the JSON Web Token
+    // profile has all the information from the user
+    return done(null, profile);
+});
+
+
+passport.use(strategy);
+
+
+
+
+
+// This can be used to keep a smaller payload
+passport.serializeUser(function(user, done) {
+    done(null, user);
+});
+
+passport.deserializeUser(function(user, done) {
+    done(null, user);
+});
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname + '/views'));
+app.use("/public", express.static(__dirname + '/public'));
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(session({
+    secret: 'shhhhhhhhh',
+    resave: true,
+    saveUninitialized: true
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use('/', routes);
+app.use('/dashboard', user);
+
+// Setup server
+
+
+
+var port = process.env.PORT;
+http.listen(port || 8000, function(){
+    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
+});
+/*
+app.get('/', function (req, res) {
+    res.sendFile(__dirname + '/views/index.html');
+});
+
+app.get('/book',function (req, res) {
+    res.sendFile(__dirname + '/views/book.html');
+});
+
+app.get('/success',function (req, res) {
+    res.sendFile(__dirname + '/views/success.html');
+});
+
+app.get('/failure',function (req, res) {
+    res.sendFile(__dirname + '/views/failure.html');
+});
+/*
+app.get('/dashboard',ensureLoggedIn('/login'), function(req, res) {
+    res.sendFile(__dirname + '/views/dashboard.html');
+});
+
+app.get('/set',function (req, res) {
+    res.sendFile(__dirname + '/views/set.html');
+});
+
+app.get('/privacy', function (req, res) {
+    res.sendFile(__dirname + '/views/privacy.html');
+});
+
+
+app.get('/dayview',function (req, res) {
+    res.sendFile(__dirname + '/views/dayview.html');
+});
+*/
+
+
+
+
+
+// ensure https
 app.use(function (req, res, next) {
     var sslUrl;
 
@@ -35,63 +136,6 @@ app.use(function (req, res, next) {
 
     return next();
 });
-
-var port = process.env.PORT;
-http.listen(port || 8000, function(){
-    console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
-});
-// Stormpath is used for our user authentication
-app.use(stormpath.init(app, {
-    website:true
-
-}));
-
-
-
-app.use("/public", express.static(__dirname + '/public'));
-
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/views/index.html');
-});
-//Adding `stormpath.loginRequired` make this route only accessible to logged in users
-app.get('/book',function (req, res) {
-    res.sendFile(__dirname + '/views/book.html');
-});
-
-app.get('/success',function (req, res) {
-    res.sendFile(__dirname + '/views/success.html');
-});
-
-app.get('/failure',function (req, res) {
-    res.sendFile(__dirname + '/views/failure.html');
-});
-
-// `groupsRequired[('clinics)]` makes this route only accessible to users who are a part of the clinics group
-app.get('/dashboard',stormpath.groupsRequired(['clinics']), function (req, res) {
-    res.sendFile(__dirname + '/views/dashboard.html');
-});
-
-app.get('/set',stormpath.groupsRequired(['clinics']), function (req, res) {
-    res.sendFile(__dirname + '/views/set.html');
-});
-
-app.get('/privacy', function (req, res) {
-    res.sendFile(__dirname + '/views/privacy.html');
-});
-
-
-app.get('/dayview',stormpath.groupsRequired(['clinics']), function (req, res) {
-    res.sendFile(__dirname + '/views/dayview.html');
-});
-
-//http.listen(port);
-
-
-
-app.on('stormpath.ready', function () {
-    console.log('Stormpath Ready!');
-});
-
 
 
 //# Socket IO Calls

@@ -79,7 +79,7 @@ app.use(session({
     secret: 'sa1sDdxz34fa7&89/',
     resave: false,
     saveUninitialized: false,
-    secure:false
+    secure:true
 }));
 
 app.use(passport.initialize());

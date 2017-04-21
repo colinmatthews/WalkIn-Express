@@ -28,6 +28,20 @@ var NeverBounce = require('neverbounce')({
     apiSecret: 'Yzu8C125gtbYR4F'
 });
 
+// ensure https
+app.use(function (req, res, next) {
+    var sslUrl;
+
+    if (process.env.NODE_ENV === 'production' &&
+        req.headers['x-forwarded-proto'] !== 'https') {
+
+        sslUrl = ['https://www.walkinexpress.ca', req.url].join('');
+        return res.redirect(sslUrl);
+    }
+
+    return next();
+});
+
 var routes = require('./routes/indexRoutes');
 var user = require('./routes/dashboardRoute');
 
@@ -82,19 +96,7 @@ http.listen(port || 8000, function(){
 });
 
 
-// ensure https
-app.use(function (req, res, next) {
-    var sslUrl;
 
-    if (process.env.NODE_ENV === 'production' &&
-        req.headers['x-forwarded-proto'] !== 'https') {
-
-        sslUrl = ['https://www.walkinexpress.ca', req.url].join('');
-        return res.redirect(sslUrl);
-    }
-
-    return next();
-});
 
 
 //# Socket IO Calls

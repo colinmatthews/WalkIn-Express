@@ -1,0 +1,148 @@
+extends baseDashboard
+block content
+    link(rel='stylesheet', href='../public/external/jquery-ui-1.12.1/jquery-ui.css')
+    script(type='text/javascript', src='../public/external/jquery-ui-1.12.1/jquery-ui.js')
+
+    link(rel='stylesheet', href='/public/css/modal.css')
+    link(rel='stylesheet', href='/public/css/base.css')
+    link(rel='stylesheet', href='/public/css/set.css')
+
+    #page-wrapper
+        .row
+            .col-lg-6
+                .addButton-padding
+                    #app
+                        button#show-modal.btn.btn-primary(@click='showModal = true') Add new appointment slot
+                        modal(v-if='showModal', @close='showModal = false')
+            .col-lg-6
+                .selectDate(style='float:right;padding-top: 15px;')
+                    p
+                        | Date:
+                        input#datepicker(type='text')
+                    |
+                    button.btn.btn-default(style='float: right', onclick='changeDate()') Change Date
+            .col-lg-12
+                h3#currentDate(style='text-align: center;padding-bottom: 5px;')
+            .col-lg-12
+                h1.page-header
+                #vue-instance
+                    appointment(v-for='item in inventory', v-bind:item='item')
+
+    template#appointment
+        .list-group(v-if='item.patient != null')
+            .list-group-item.clearfix(style='background-color: rgba(185,37,24,0.46)')
+                p {{ item.displayTime }}
+                .pull-right
+                    button#show-modal3.btn.btn-xs.btn-warning(v-on:click='showModal2 = true')
+                        span.glyphicon.glyphicon-trash
+                    confirmmodal(v-if='showModal2', @close='showModal2 = false', v-bind:item='item')
+                    |
+                    button#show-modal2.btn.btn-xs.btn-warning(v-on:click='showModal = true')
+                        span.glyphicon.glyphicon-info-sign
+                    patientmodal(v-if='showModal', @close='showModal = false', v-bind:item='item')
+        .list-group(v-else='')
+            .list-group-item.clearfix
+                p {{ item.displayTime }}
+                |
+                span.pull-right
+                    button.btn.btn-xs.btn-warning(v-on:click='deleteAppointment(item.id)')
+                        span.glyphicon.glyphicon-trash
+
+    template#modal-template
+        transition(name='modal')
+            .modal-mask
+                .modal-wrapper
+                    .modal-container
+                        .modal-header
+                            div(name='header')
+                                h3 Add New Appointment Slot
+                        .modal-body
+                            div(name='body')
+                                .form-inline
+                                    label(for='hourInput') Appointment Time:
+                                    |
+                                    select#hourInput.form-control
+                                        option 1
+                                        option 2
+                                        option 3
+                                        option 4
+                                        option 5
+                                        option 6
+                                        option 7
+                                        option 8
+                                        option 9
+                                        option 10
+                                        option 11
+                                        option 12
+                                    label(for='minInput')
+                                    |
+                                    select#minInput.form-control
+                                        option 00
+                                        option 05
+                                        option 10
+                                        option 15
+                                        option 20
+                                        option 25
+                                        option 30
+                                        option 35
+                                        option 40
+                                        option 45
+                                        option 50
+                                        option 55
+                                    |
+                                    select#period.form-control
+                                        option AM
+                                        option PM
+                        .modal-footer
+                            #footer
+                                button.btn.btn-danger(@click="$emit('close')") Close without saving
+                                |
+                                button.btn.btn-primary(v-on:click='newAppointmentSlot()', @click="$emit('close')") Save
+
+    template#confirmmodal-template
+        transition(name='modal')
+            .modal-mask
+                .modal-wrapper
+                    .modal-container
+                        .modal-header
+                            div(name='header')
+                                h3 Delete Booked Appointment
+                        .modal-body
+                            div(name='body')
+                                b This appointment has been booked by a patient.
+                                br
+                                |
+                                b Are you sure you want to delete this appointment?
+                        .modal-footer
+                            #footer1
+                                button.btn.btn-danger(@click="$emit('close')") No
+                                |
+                                button.btn.btn-primary(v-on:click='deleteAppointment(item.id)', @click="$emit('close')") Yes
+
+    template#patientmodal-template
+        transition(name='modal')
+            .modal-mask
+                .modal-wrapper
+                    .modal-container
+                        .modal-header
+                            div(name='header')
+                                h3 Patient Information
+                        .modal-body
+                            div(name='body')
+                                p
+                                    b Name:
+                                    |  {{ item.name }}
+                                p
+                                    b Date of Birth:
+                                    |  {{ item.DOB }}
+                                p
+                                    b Phone:
+                                    |  {{ item.phone }}
+                                p
+                                    b Address:
+                                    |  {{ item.address }}
+                        .modal-footer
+                            #footer3
+                                button.btn.btn-danger(@click="$emit('close')") Close
+    script(src='../public/external/vue.js')
+    script(src='/public/js/set.js')

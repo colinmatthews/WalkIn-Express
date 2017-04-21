@@ -1,0 +1,15 @@
+extend base
+
+block navbar
+    nav.navbar.navbar-default.navbar-fixed-top.topnav(role='navigation')
+        .container.topnav
+            .navbar-header
+                a.navbar-brand.topnav(href='/')
+                    img(src='/public/img/banner.png')
+
+
+block content
+    link(href='../public/css/index.css', rel='stylesheet')
+    object(data='../public/img/PrivacyPolicy.pdf', width='100%', height='100%', type='application/pdf')
+
+

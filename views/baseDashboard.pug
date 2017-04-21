@@ -1,0 +1,50 @@
+doctype html
+html
+    head
+        meta(charset='UTF-8')
+        title Walk In Express
+        script(src='/socket.io/socket.io.js')
+        script(src='https://code.jquery.com/jquery-1.12.4.js', integrity='sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=', crossorigin='anonymous')
+        link(href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css', rel='stylesheet', integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u', crossorigin='anonymous')
+        script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js', integrity='sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa', crossorigin='anonymous')
+        link(href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', rel='stylesheet', integrity='sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN', crossorigin='anonymous')
+        link(rel='stylesheet', href='/public/css/base.css')
+    body
+        #wrapper
+            nav.navbar.navbar-inverse.navbar-fixed-top(role='navigation')
+                .navbar-header
+                    button.navbar-toggle(type='button', data-toggle='collapse', data-target='.navbar-ex1-collapse')
+                        span.sr-only Toggle navigation
+                        span.icon-bar
+                        span.icon-bar
+                        span.icon-bar
+                    |
+                    a.navbar-brand(href='/dashboard')
+                        img(src='/public/img/logo.png', alt='LOGO')
+                form#logout_form(action='/logout', method='POST')
+                    ul.nav.navbar-right.top-nav
+                        li
+                            li
+                                a(href='/logout')
+                                    i.fa.fa-fw.fa-power-off
+                                    |  Logout
+
+                .extra-topnav
+                .red-bar
+                .collapse.navbar-collapse.navbar-ex1-collapse
+                    ul.nav.navbar-nav.side-nav
+                        li
+                            a(href='/dashboard')
+                                i.fa.fa-fw.fa.fa-tachometer(aria-hidden='true')
+                                |  DASHBOARD
+                        li
+                            a(href='/set')
+                                i.fa.fa-fw.fa.fa.fa-calendar(aria-hidden='true')
+                                |  SCHEDULE
+                        li
+                            a(href='/dayview')
+                                i.fa.fa-fw.fa.fa.fa-line-chart(aria-hidden='true')
+                                |  REPORTS
+
+
+block content

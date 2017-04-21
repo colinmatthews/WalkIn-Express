@@ -1,0 +1,42 @@
+extends baseDashboard
+
+block content
+    #page-wrapper
+        .row
+            .col-lg-12
+                h1.page-header
+            .col-lg-12
+                #vue-instance
+                    h3 Appointments
+                    table.table
+                        thead
+                            tr
+                                th Time
+                    schedule(v-for='item in inventory', v-bind:item='item')
+    template#schedule
+        table.table
+            tbody
+                tr(v-if='item.patient != null')
+                    td(style='background-color:#ff2a28') {{item.displayTime}}
+                    td(style='background-color:#ff2a28')
+                        button.btn.btn-danger(data-toggle='collapse', data-target='#demo', style='float: right') View Appointment Details
+                tr(v-else='')
+                    td(style='background-color:#0fff87') {{item.displayTime}}
+        #demo.collapse
+            p
+                b Name:
+                |  {{ item.name }}
+            p
+                b Date of Birth:
+                |  {{ item.DOB }}
+            p
+                b Healthcard:
+                |  {{ item.healthcard }}
+            p
+                b Phone:
+                |  {{ item.phone }}
+            p
+                b Address:
+                |  {{ item.address }}
+    script(src='../public/external/vue.js')
+    script(src='/public/js/dayview.js')

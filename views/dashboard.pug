@@ -1,4 +1,42 @@
-//
-   Created by colin on 4/18/2017.
+extends baseDashboard
 
-include dashboard.html
+block content
+    #page-wrapper
+        .container-fluid
+            #vue-instance
+                new-appt(v-for='item in inventory', v-bind:item='item')
+                div(v-if='inventory[0] == null')
+                    b#noBookings No current bookings!
+    template#new-appt
+        #newPanel.panel.panel-yellow
+            .panel-heading
+                .row
+                    .col-sm-10 New Patient
+                    .col-sm-2 {{ item.displayTime }}
+            .panel-body
+                label Name:
+                |
+                span {{ item.name }}
+                br
+                |
+                label Date of birth:
+                |
+                span {{ item.DOB }}
+                br
+                |
+                label Phone:
+                |
+                span {{ item.phone }}
+                br
+                |
+                label Address:
+                |
+                span {{ item.address }}
+            .panel-footer
+                button.btn.btn-primary(style='float:right;', type='button', v-on:click='confirmAppointment(item.email, item.id)') Accept
+                |
+                button.btn.btn-danger(type='button', v-on:click='denyAppointment(item.id, item.time, item.displayTime, item.email)') Deny
+    script(src='../public/external/vue.js')
+    script(src='/public/js/dashboard.js')
+    link(rel='stylesheet', href='/public/css/dashboard.css')
+

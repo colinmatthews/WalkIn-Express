@@ -1,4 +1,105 @@
-//
-   Created by colin on 4/18/2017.
+extends base.pug
 
-include index.html
+
+block navbar
+    nav.navbar.navbar-default.navbar-fixed-top.topnav(role='navigation')
+        .container.topnav
+            .navbar-header
+                button.navbar-toggle(type='button', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1')
+                    span.sr-only Toggle navigation
+                    span.icon-bar
+                    span.icon-bar
+                    span.icon-bar
+                |
+                a.navbar-brand.topnav(href='/')
+                    img(src='/public/img/banner.png')
+            #bs-example-navbar-collapse-1.collapse.navbar-collapse
+                ul.nav.navbar-nav.navbar-right
+                    li.navbar-button
+                        a(href='#how', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1.in') How It Works
+                    li.navbar-button
+                        a(href='#contact', data-toggle='collapse', data-target='#bs-example-navbar-collapse-1.in') Contact Us
+                    li.navbar-signup.navbar-button
+                        a(href='/book') Book Now
+
+block content
+    link(href='../public/css/index.css', rel='stylesheet')
+    script(src='../public/js/index.js')
+    .intro-header
+        .container
+            .row
+                .col-lg-12
+                    .intro-message
+                        h1 Never Wait Again
+                        hr.intro-divider
+                        ul.list-inline.intro-social-buttons
+                            li
+                                a.btn.btn-default.btn-lg(href='/book')
+                                    span.network-name Book Now
+
+    a(name='how')
+    .content-section-a
+        .container
+            .row
+                .col-lg-5.col-sm-6
+                    hr.section-heading-spacer
+                    .clearfix
+                    h2.section-heading
+                        | Step 1:
+                        br
+                        | Don&apos;t Want To Wait At The Clinic?
+                    p.lead
+                        | No one likes to wait in a room of sick people. Lucky for you, you don&apos;t have to. By using Walk-In Express, you can reduce your wait time by up to 95%.
+                .col-lg-5.col-lg-offset-2.col-sm-6
+                    img.img-responsive(src='../public/img/preview-01.jpg', alt='')
+    .content-section-b
+        .container
+            .row
+                .col-lg-5.col-lg-offset-1.col-sm-push-6.col-sm-6
+                    hr.section-heading-spacer
+                    .clearfix
+                    h2.section-heading
+                        | Step 2:
+                        br
+                        | Reserve Your Time Slot
+                    p.lead
+                        | Log in, pick your favourite clinic, and reserve your time. No more uncertainty, no more hassle.
+                .col-lg-5.col-sm-pull-6.col-sm-6
+                    img.img-responsive(src='../public/img/22.jpg', alt='')
+    .content-section-a
+        .container
+            .row
+                .col-lg-5.col-sm-6
+                    hr.section-heading-spacer
+                    .clearfix
+                    h2.section-heading
+                        | Step 3:
+                        br
+                        | Start Saving Time
+                    p.lead
+                        | Sit back and relax, knowing that when you arrive at the clinic, you&apos;ll see a doctor in minutes. Life is better with Walk-In Express.
+                .col-lg-5.col-lg-offset-2.col-sm-6
+                    img.img-responsive(src='../public/img/SaveTime2-01.jpg', alt='')
+    a(name='contact')
+    section#contact
+        .container
+            .row
+                .col-lg-8.col-lg-offset-2.text-center
+                    h2.section-heading Let&apos;s Get In Touch!
+                    hr.primary
+                    p If you have a question or comment, we&apos;d love to hear from you!
+                #wrapper(style='text-align: center')
+                    .col-lg-4.text-center(style='display: inline-block; float:none')
+                        ul.list-inline.list-social
+                            li.social-twitter
+                                a(href='#')
+                                    i.fa.fa-twitter.fa-2x
+                            li.social-facebook
+                                a(href='#')
+                                    i.fa.fa-facebook.fa-2x
+                            li.social-google-plus
+                                a(href='#')
+                                    i.fa.fa-google-plus.fa-2x
+                        i.fa.fa-envelope-o.fa-2x.sr-contact
+                        p
+                            a(href='mailto:feedback@walkinexpress.ca') feedback@walkinexpress.ca

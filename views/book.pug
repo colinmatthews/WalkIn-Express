@@ -1,0 +1,114 @@
+extends base
+
+block navbar
+    nav.navbar.navbar-default.navbar-fixed-top.topnav(role='navigation')
+        .container.topnav
+            .navbar-header
+                a.navbar-brand.topnav(href='/')
+                    img(src='/public/img/banner.png')
+
+
+block content
+
+    content-section-a
+        .container
+            .row
+                hr.section-heading-spacer
+                .clearfix
+                h2.section-heading Book Your Appointment
+                #map
+                h4.section-heading West Windsor Medical Clinic
+                h6.section-text 1608 Tecumseh Rd W, Windsor, ON N9B 1T8
+                h6.section-text (519) 258-4400
+                #vue-instance
+                    appointment(v-for='item in inventory', :key='item.id', v-bind:item='item')
+                    div(v-if='inventory[0] == null')
+                        br
+                        |
+                        b#noBookings No appointments available!
+    script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyC0MxRy96T3Hkl4btgbVrLjWDoWUt4GMug', async='', defer='')
+
+    template#appointment
+        .list-group
+            .list-group-item.clearfix
+                p {{ item.displayTime }}
+                |
+                button#show-modal.btn.btn-danger(v-on:click='showModal = true') Book Appointment
+                modal(v-if='showModal', @close='showModal = false', v-bind:item='item')
+
+    template#modal-template
+        .modal-mask
+            .modal-wrapper
+                .modal-container
+                    #invalidEmail-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('invalidEmail-alert')", aria-label='Close')
+                            span(aria-hidden='true') &times;
+                        p Not a valid email. Please enter a valid email.
+                    #DOB-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('DOB-alert')", aria-label='Close')
+                            span(aria-hidden='true') &times;
+                        p  Invalid Date. Must follow MM/DD/YYYY format.
+                    #email-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('email-alert')", aria-label='Close')
+                            span(aria-hidden='true') &times;
+                        p  Invalid email. Must follow text@address.domain format.
+                    #name-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('name-alert')")
+                            span(aria-hidden='true') &times;
+                        p  The name field cannot be empty.
+                    #phone-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('phone-alert')", aria-label='Close')
+                            span(aria-hidden='true') &times;
+                        p Invalid phone number. Must follow XXX-XXX-XXXX format.
+                    #address-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('address-alert')", aria-label='Close')
+                            span(aria-hidden='true') &times;
+                        p The address field cannot be empty.
+                    .modal-header
+                        div(name='header')
+                            h3(style='color: #0c8241')  {{ item.displayTime }} At West Windsor Walk-In Clinic
+                    .modal-body
+                        div(name='body')
+                            .form-group
+                                .form-input
+                                    label(for='nameInput') First Name
+                                    |
+                                    input#nameInput.form-control(type='text', placeholder='Name:')
+                                .form-input
+                                    label(for='phoneInput') Phone Number
+                                    |
+                                    input#phoneInput.form-control(type='tel', placeholder='Phone Number:', maxlength='10')
+                                .form-input
+                                    label(for='addressInput') Address
+                                    |
+                                    input#addressInput.form-control(type='text', placeholder='Address:')
+                                .form-input
+                                    label(for='emailInput') Email Address:
+                                    |
+                                    input#emailInput.form-control(type='email', placeholder='Email:')
+                                .form-input
+                                    label(for='dobInput') Date of Birth(MM/DD/YYYY)
+                                    |
+                                    input#dobInput.form-control(type='text', placeholder='DOB:(MM/DD/YYYY)')
+                                .form-input
+                                    input#submitCheck(type='checkbox', v-on:click='enableSubmit()')
+                                    |
+                                    label.mobileLabel
+                                        | I agree to the
+                                        a(href='/privacy', target='_blank') privacy policy.
+                            .modal-footer
+                                #footer
+                                    button.btn.btn-danger.book-btn(@click="$emit('close')") Close Without Booking
+                                    | node
+                                    button#submit.btn.btn-primary.book-btn(style='float:right;', v-on:click='validateForm(item.id)', disabled='') Book!
+
+    script(src='/socket.io/socket.io.js')
+    script(src='/public/external/moment.js')
+
+    link(href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', rel='stylesheet', integrity='sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN', crossorigin='anonymous')
+    link(href='../public/css/book.css', rel='stylesheet')
+    link(href='../public/css/modal.css', rel='stylesheet')
+    script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyC0MxRy96T3Hkl4btgbVrLjWDoWUt4GMug', async='', defer='')
+    script(src='../public/external/vue.js')
+    script(src='../public/js/book.js')
+

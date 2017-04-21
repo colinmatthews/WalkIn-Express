@@ -11,6 +11,9 @@ router.get('/', ensureLoggedIn, function(req, res, next) {
     res.render('dashboard', { user: req.user });
 });
 
+
+
+
 module.exports = router;
 /**
  * Created by colin on 4/18/2017.

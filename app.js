@@ -22,6 +22,7 @@ var session = require('express-session');
 var SparkPost = require('sparkpost');
 var client = new SparkPost('15756eb2514dee0c0c069401c1f49a99456f790c');
 
+// Neverbounce is used to validate the email a patient enters when booking an appointment (1000/month free)
 var NeverBounce = require('neverbounce')({
     apiKey: 'Bp4jC20K',
     apiSecret: 'Yzu8C125gtbYR4F'
@@ -30,6 +31,7 @@ var NeverBounce = require('neverbounce')({
 var routes = require('./routes/indexRoutes');
 var user = require('./routes/dashboardRoute');
 
+// passport and auth0 are used for user auth for clinic login
 var strategy = new Auth0Strategy({
     domain:       process.env.AUTH0_DOMAIN,
     clientID:     process.env.AUTH0_CLIENT_ID,
@@ -42,12 +44,7 @@ var strategy = new Auth0Strategy({
     return done(null, profile);
 });
 
-
 passport.use(strategy);
-
-
-
-
 
 // This can be used to keep a smaller payload
 passport.serializeUser(function(user, done) {
@@ -61,66 +58,28 @@ app.set('view engine', 'pug');
 app.set('views', path.join(__dirname + '/views'));
 app.use("/public", express.static(__dirname + '/public'));
 
+// App.use lines setup express session
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(session({
     secret: 'sa1sDdxz34fa7&89/',
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    secure:false
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.use('/', routes);
-app.use('/dashboard', user);
-
-
 // Setup server
 
-
+app.use('/', routes);
+app.use('/dashboard', user);
 
 var port = process.env.PORT;
 http.listen(port || 8000, function(){
     console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
 });
-/*
-app.get('/', function (req, res) {
-    res.sendFile(__dirname + '/views/index.html');
-});
-
-app.get('/book',function (req, res) {
-    res.sendFile(__dirname + '/views/book.html');
-});
-
-app.get('/success',function (req, res) {
-    res.sendFile(__dirname + '/views/success.html');
-});
-
-app.get('/failure',function (req, res) {
-    res.sendFile(__dirname + '/views/failure.html');
-});
-/*
-app.get('/dashboard',ensureLoggedIn('/login'), function(req, res) {
-    res.sendFile(__dirname + '/views/dashboard.html');
-});
-
-app.get('/set',function (req, res) {
-    res.sendFile(__dirname + '/views/set.html');
-});
-
-app.get('/privacy', function (req, res) {
-    res.sendFile(__dirname + '/views/privacy.html');
-});
-
-
-app.get('/dayview',function (req, res) {
-    res.sendFile(__dirname + '/views/dayview.html');
-});
-*/
-
-
-
 
 
 // ensure https
@@ -699,7 +658,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).run(rconnection, function (err, cursor) {
+            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;

@@ -95,11 +95,11 @@ block content
                                     |
                                     label.mobileLabel
                                         | I agree to the
-                                        a(href='/privacy', target='_blank') privacy policy.
+                                        a(href='/privacy', target='_blank')  privacy policy.
                             .modal-footer
                                 #footer
-                                    button.btn.btn-danger.book-btn(@click="$emit('close')") Close Without Booking
-                                    | node
+                                    button.btn.btn-danger.book-btn(@click="$emit('close')") Close
+                                    |
                                     button#submit.btn.btn-primary.book-btn(style='float:right;', v-on:click='validateForm(item.id)', disabled='') Book!
 
     script(src='/socket.io/socket.io.js')
@@ -108,7 +108,6 @@ block content
     link(href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', rel='stylesheet', integrity='sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN', crossorigin='anonymous')
     link(href='../public/css/book.css', rel='stylesheet')
     link(href='../public/css/modal.css', rel='stylesheet')
-    script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyC0MxRy96T3Hkl4btgbVrLjWDoWUt4GMug', async='', defer='')
     script(src='../public/external/vue.js')
     script(src='../public/js/book.js')
 

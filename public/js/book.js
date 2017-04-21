@@ -29,9 +29,7 @@ initMap();
 
 var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
 var socket = io.connect();
-if(today != undefined){
-    socket.emit("getDateAppointments",today);
-}
+
 
 
 
@@ -69,7 +67,7 @@ var modal = {
         //  ***validateForm ***
         //
         //  **What:**
-        //   Validates the user's input into the form on the client side, and if valid books the appointment
+        //   Validates the user's input into the form on the client side, validates email with neverbounce, books if valid
         //
         //  **Why:**
         //  To ensure input is as clean as possible
@@ -143,7 +141,7 @@ var modal = {
 
                     socket.on("checkAvailabilityResults",function(result){
                         console.log(result);
-                        if(result == null) {
+                        if(result == null) { // result returns the appointments patient field ( will be null when there is no patient)
                             socket.emit("createPatient", data);
                             socket.on("newPatientID", function (patientID) {
                                 console.log(patientID);
@@ -174,10 +172,10 @@ var modal = {
         //  ***hideElement ***
         //
         //  **What:**
-        //   adds the "hide" class to any element passed into it, which hides it from the front end
+        //   adds the "hide" class to any element passed into it, which hides it from the front end via bootstrap
         //
         //  **Why:**
-        //  To remove error messages
+        //  To remove error messages after they appear
         //
         //  **When:**
         //  When the user dismisses an error message
@@ -203,8 +201,8 @@ Vue.component('appointment',{
 
 // #### vm ####
 // vm is the instance of vue-js that contains the components, and anchors on to the html page. It contains the local data
-//, as well as one large function. This function is called when the page is created, and moves through a series of function calls
-// between the client and the server in a sequential manner.
+//, as well as one large function (created). This function is called when the page is created, and moves through a series of function calls
+// between the client and the server in a sequential manner to populate appointments on the page.
 var vm = new Vue({
     el: '#vue-instance',
     data: {
@@ -213,27 +211,21 @@ var vm = new Vue({
         showModal: false
     },
     created: function () {
-        // var tempArray is used to store and sort by time the appointments before they are pushed to the front-end local array.
-        var tempArray = [];
+
+        // TO-DO: Implement some sort of check to ensure that the javascript date is compatible with rethink db
+        socket.emit("getDateAppointments",today);
+
 
         socket.on("initRecordsAppointments",function(data){
             for (var i = 0; i < data.length; i++) {
                 if(data[i].patient == null) {
-                    tempArray.push({
+                    vm.inventory.push({
                         time: data[i].time,
                         id: data[i].id,
                         patient: data[i].patient,
                         displayTime: data[i].displayTime
                     });
                 }
-            }
-            // tempArray.sort sorts the array by time
-            tempArray.sort(function(a, b){
-                return a.time > b.time
-            });
-            // This for loop pushes the now sorted array into the local vueJS array, where they will appear on the front end
-            for( var j=0; j < tempArray.length;j++){
-                vm.inventory.push (tempArray[j]);
             }
 
             socket.emit('updateRecordsSet',today);

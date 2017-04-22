@@ -210,7 +210,7 @@ var vm = new Vue({
         ],
         showModal: false
     },
-    created: function () {
+    mounted: function () {
 
         // TO-DO: Implement some sort of check to ensure that the javascript date is compatible with rethink db
         socket.emit("getDateAppointments",today);

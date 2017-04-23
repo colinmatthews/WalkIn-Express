@@ -16,6 +16,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var session = require('express-session');
 
+var debug = true;
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients
@@ -41,6 +42,17 @@ app.use(function (req, res, next) {
 
     return next();
 });
+
+
+// Change tables based on production or staging
+if (debug === true){
+    var appointments_table = 'appointments';
+    var patients_table = 'patients';
+}
+else {
+    var appointments_table = 'appointments_staging';
+    var patients_table = 'patients_staging';
+}
 
 var routes = require('./routes/indexRoutes');
 var user = require('./routes/dashboardRoute');
@@ -161,7 +173,7 @@ io.on("connection", function (socket) {
             if (err) throw err;
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
-            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).eqJoin
+            r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).eqJoin
             ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
                 .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
 
@@ -203,7 +215,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).changes().run(rconnection, function (err, cursor) {
+            r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).changes().run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.each(function (err, result) {
                     if (err) throw err;
@@ -240,7 +252,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('patients').filter({id: patientID}).run(rconnection, function (err, cursor) {
+            r.table(patients_table).filter({id: patientID}).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
@@ -341,7 +353,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').get(appointmentID).update({viewed: true}).run(rconnection, function (err, cursor) {
+            r.table(appointments_table).get(appointmentID).update({viewed: true}).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 console.log("UPDATE APPOINTMENT VIEWED " + cursor);
             });
@@ -375,7 +387,7 @@ io.on("connection", function (socket) {
             if (err) throw err;
             rconnection = conn;
 
-            r.table('appointments').insert({
+            r.table(appointments_table).insert({
                 "patient": null,
                 "time": time,
                 "viewed": false,
@@ -425,7 +437,7 @@ io.on("connection", function (socket) {
             if (err) throw err;
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
-            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC"))).eqJoin
+            r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(date+"UTC"))).eqJoin
             ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
                 .coerceTo('array').run(rconnection, function (err, cursor) {
 
@@ -466,7 +478,7 @@ io.on("connection", function (socket) {
             if (err) throw err;
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
-            r.table('appointments').filter(r.row('timestamp').date().eq(new Date(date+"UTC")))
+            r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(date+"UTC")))
                 .filter({patient: null}).run(rconnection, function (err, cursor) {
 
                     if (err) throw err;
@@ -508,7 +520,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.db('WalkInExpress').table("appointments").filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
+            r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
                 console.log('here');
                 if (err) throw err;
                 myCursor=cursor;
@@ -563,7 +575,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').get(appointmentID).delete().run(rconnection, function (err, cursor) {
+            r.table(appointments_table).get(appointmentID).delete().run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 console.log("DELETE APPOINTMENT DATA " + cursor);
             });
@@ -614,7 +626,7 @@ io.on("connection", function (socket) {
 
             }
 
-            r.table('appointments').insert({
+            r.table(appointments_table).insert({
                 "patient": null,
                 "time": hour + (minute/60),
                 "viewed": false,
@@ -660,7 +672,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
+            r.table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
@@ -701,7 +713,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('patients').insert({
+            r.table(patients_table).insert({
                 "DOB": data.DOB,
                 "address": data.address,
                 "doctor_id": data.doctor_id,
@@ -745,7 +757,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').get(appointmentID).update({patient: patientID}).run(rconnection, function (err, cursor) {
+            r.table(appointments_table).get(appointmentID).update({patient: patientID}).run(rconnection, function (err, cursor) {
                 if (err) throw err;
                 console.log("UPDATE APPOINTMENT VIEWED " + cursor);
             });
@@ -778,7 +790,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.table('appointments').get(appointmentID)("patient").run(rconnection, function (err, result) {
+            r.table(appointments_table).get(appointmentID)("patient").run(rconnection, function (err, result) {
                 if (err) throw err;
                 console.log(result);
                 socket.emit("checkAvailabilityResults", result);

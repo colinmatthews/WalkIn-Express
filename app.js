@@ -45,7 +45,7 @@ app.use(function (req, res, next) {
 
 
 // Change tables based on production or staging
-if (debug === true){
+if (debug === false){
     var appointments_table = 'appointments';
     var patients_table = 'patients';
 }

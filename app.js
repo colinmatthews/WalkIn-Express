@@ -14,7 +14,7 @@ var passport = require('passport');
 var Auth0Strategy = require('passport-auth0');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-var session = require('express-session');
+var cookieSession = require('cookie-session');
 
 var debug = true;
 // Initialize services
@@ -87,12 +87,20 @@ app.use("/public", express.static(__dirname + '/public'));
 // App.use lines setup express session
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(session({
-    secret: 'sa1sDdxz34fa7&89/',
-    resave: false,
-    saveUninitialized: false,
-    secure:true
-}));
+app.use(cookieSession({
+    name: 'session',
+    keys: [/* secret keys */],
+
+    // Cookie Options
+    cookie: {
+        secure: true,
+        httpOnly: true,
+        domain: 'example.com',
+        path: 'foo/bar',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+
+}))
 
 app.use(passport.initialize());
 app.use(passport.session());

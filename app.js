@@ -89,7 +89,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieSession({
     name: 'session',
-    keys: [/* secret keys */],
+    keys: ['key1','key2'],
 
     // Cookie Options
     cookie: {

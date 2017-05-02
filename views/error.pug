@@ -1,0 +1,24 @@
+extends base
+
+block navbar
+    nav.navbar.navbar-default.navbar-fixed-top.topnav(role='navigation')
+        .container.topnav
+            .navbar-header
+                a.navbar-brand.topnav(href='/')
+                    img(src='/public/img/banner.png')
+
+
+block content
+    link(href='../public/css/index.css', rel='stylesheet')
+    .content-section-a
+        .container
+            row
+                .col-lg-5.col-sm-6
+                    hr.section-heading-spacer
+                    .clearfix
+                    h2.section-heading
+                        | Something went wrong!
+                    p.lead
+                        | Please contact support at support@walkinexpress.ca
+
+

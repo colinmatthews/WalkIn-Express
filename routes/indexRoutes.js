@@ -38,6 +38,11 @@ router.get('/dayview', ensureLoggedIn, function(req, res, next) {
     res.render('dayview', { user: req.user });
 });
 
+router.get('/error', ensureLoggedIn, function(req, res, next) {
+    res.render('error');
+});
+
+
 router.get('/login',
   function(req, res){
     res.render('login', { env: env });

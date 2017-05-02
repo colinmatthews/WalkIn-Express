@@ -38,7 +38,7 @@ router.get('/dayview', ensureLoggedIn, function(req, res, next) {
     res.render('dayview', { user: req.user });
 });
 
-router.get('/error', ensureLoggedIn, function(req, res, next) {
+router.get('/error', function(req, res, next) {
     res.render('error');
 });
 

@@ -181,7 +181,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             // today's appointments that have patients that have not been viewed
             r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).eqJoin
@@ -228,7 +228,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).changes().run(rconnection, function (err, cursor) {
@@ -270,7 +270,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.table(patients_table).filter({id: patientID}).run(rconnection, function (err, cursor) {
@@ -304,7 +304,7 @@ io.on("connection", function (socket) {
             if (err) throw err;
         }
         else{
-            if(err)  return res.redirect('../error');
+            if(err) res.redirect('../error');
         }
         console.log("confirm");
 
@@ -340,7 +340,7 @@ io.on("connection", function (socket) {
             if (err) throw err;
         }
         else{
-            if(err)  return res.redirect('../error');
+            if(err) res.redirect('../error');
         }
         console.log("deny");
         console.log(userEmail);
@@ -386,7 +386,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).update({viewed: true}).run(rconnection, function (err, cursor) {
@@ -424,7 +424,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
 
@@ -479,7 +479,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
@@ -525,7 +525,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
@@ -573,7 +573,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
@@ -633,7 +633,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).delete().run(rconnection, function (err, cursor) {
@@ -670,7 +670,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             var displayTime;
@@ -740,7 +740,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
@@ -786,7 +786,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.table(patients_table).insert({
@@ -835,7 +835,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).update({patient: patientID}).run(rconnection, function (err, cursor) {
@@ -873,7 +873,7 @@ io.on("connection", function (socket) {
                 if (err) throw err;
             }
             else{
-                if(err)  return res.redirect('../error');
+                if(err) res.redirect('../error');
             }
             rconnection = conn;
             r.table(appointments_table).get(appointmentID)("patient").run(rconnection, function (err, result) {

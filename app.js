@@ -16,7 +16,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
 
-var debug = false;
+var debug = true;
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients
@@ -45,13 +45,13 @@ app.use(function (req, res, next) {
 
 
 // Change tables based on production or staging
-if (debug){
-    var appointments_table = 'appointments_staging';
-    var patients_table = 'patients_staging';
-}
-else {
+if (debug === false){
     var appointments_table = 'appointments';
     var patients_table = 'patients';
+}
+else {
+    var appointments_table = 'appointments_staging';
+    var patients_table = 'patients_staging';
 }
 
 var routes = require('./routes/indexRoutes');
@@ -122,7 +122,7 @@ http.listen(port || 8000, function(){
 //***
 //  Socket is used to make calls to our database, which are triggered by the client. Its uses an event-driven approach
 //so these functions will only be called when particular events occur ( button click, page load, etc)
-io.on("connection", function (socket) {
+io.on("connection", function (socket, res) {
 
     // rconnection and myCursor are used when connecting to rethinkDB, so that we can access the connection or the cursor
     // if we need to.
@@ -177,12 +177,8 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
+            rconnection = conn;
             // today's appointments that have patients that have not been viewed
             r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).eqJoin
             ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
@@ -224,12 +220,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).changes().run(rconnection, function (err, cursor) {
                 if (err) throw err;
@@ -266,12 +257,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.table(patients_table).filter({id: patientID}).run(rconnection, function (err, cursor) {
                 if (err) throw err;
@@ -300,12 +286,7 @@ io.on("connection", function (socket) {
 
 
     socket.on('confirmAppointment',function(userEmail,err){
-        if(debug){
-            if (err) throw err;
-        }
-        else{
-            if(err) res.redirect('../error');
-        }
+        if(err)throw err;
         console.log("confirm");
 
         client.transmissions.send({
@@ -336,12 +317,7 @@ io.on("connection", function (socket) {
     //
 
     socket.on('denyAppointment',function(userEmail, err){
-        if(debug){
-            if (err) throw err;
-        }
-        else{
-            if(err) res.redirect('../error');
-        }
+        if(err)throw err;
         console.log("deny");
         console.log(userEmail);
         client.transmissions.send({
@@ -382,12 +358,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).update({viewed: true}).run(rconnection, function (err, cursor) {
                 if (err) throw err;
@@ -420,12 +391,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
 
             r.table(appointments_table).insert({
@@ -475,12 +441,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
             r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(date+"UTC"))).eqJoin
@@ -521,12 +482,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
             r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(date+"UTC")))
@@ -569,12 +525,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
                 console.log('here');
@@ -629,12 +580,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).delete().run(rconnection, function (err, cursor) {
                 if (err) throw err;
@@ -666,12 +612,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             var displayTime;
             if( hour > 12){
@@ -736,17 +677,12 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) res.redirect("../error");
             rconnection = conn;
             r.table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
-                if (err) throw err;
+                if (err) res.redirect("../error");
                 cursor.toArray(function (err, result) {
-                    if (err) throw err;
+                    if (err) res.redirect("../error");
                     console.log(result);
                     socket.emit("initRecordsAppointments", result);
                 });
@@ -782,12 +718,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.table(patients_table).insert({
                 "DOB": data.DOB,
@@ -831,12 +762,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).update({patient: patientID}).run(rconnection, function (err, cursor) {
                 if (err) throw err;
@@ -869,12 +795,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if(debug){
-                if (err) throw err;
-            }
-            else{
-                if(err) res.redirect('../error');
-            }
+            if (err) throw err;
             rconnection = conn;
             r.table(appointments_table).get(appointmentID)("patient").run(rconnection, function (err, result) {
                 if (err) throw err;

@@ -46,13 +46,13 @@ app.use(function (req, res, next) {
 
 
 // Change tables based on production or staging
-if (debug === false){
-    var appointments_table = 'appointments';
-    var patients_table = 'patients';
-}
-else {
+if (debug){
     var appointments_table = 'appointments_staging';
     var patients_table = 'patients_staging';
+}
+else {
+    var appointments_table = 'appointments';
+    var patients_table = 'patients';
 }
 
 var routes = require('./routes/indexRoutes');
@@ -142,7 +142,7 @@ http.listen(port || 8000, function(){
 //***
 //  Socket is used to make calls to our database, which are triggered by the client. Its uses an event-driven approach
 //so these functions will only be called when particular events occur ( button click, page load, etc)
-io.on("connection", function (socket, res) {
+io.on("connection", function (socket) {
 
     // rconnection and myCursor are used when connecting to rethinkDB, so that we can access the connection or the cursor
     // if we need to.

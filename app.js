@@ -16,7 +16,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
 
-var debug = true;
+var debug = false;
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients

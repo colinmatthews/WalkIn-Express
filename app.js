@@ -29,7 +29,6 @@ var NeverBounce = require('neverbounce')({
     apiSecret: 'Yzu8C125gtbYR4F'
 });
 
-
 // ensure https
 app.use(function (req, res, next) {
     var sslUrl;
@@ -110,25 +109,6 @@ app.use(passport.session());
 app.use('/', routes);
 app.use('/dashboard', user);
 
-app.use(function(req, res, next){
-    res.status(404);
-
-    // respond with html page
-    if (req.accepts('html')) {
-        res.render('error', { url: req.url });
-        return;
-    }
-
-    // respond with json
-    if (req.accepts('json')) {
-        res.send({ error: 'Not found' });
-        return;
-    }
-
-    // default to plain-text. send()
-    res.type('txt').send('Not found');
-});
-
 var port = process.env.PORT;
 http.listen(port || 8000, function(){
     console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
@@ -142,7 +122,7 @@ http.listen(port || 8000, function(){
 //***
 //  Socket is used to make calls to our database, which are triggered by the client. Its uses an event-driven approach
 //so these functions will only be called when particular events occur ( button click, page load, etc)
-io.on("connection", function (socket, res) {
+io.on("connection", function (socket) {
 
     // rconnection and myCursor are used when connecting to rethinkDB, so that we can access the connection or the cursor
     // if we need to.
@@ -697,12 +677,12 @@ io.on("connection", function (socket, res) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) socket.emit("errorRedirect");
+            if (err) throw err;
             rconnection = conn;
             r.table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
-                if (err) socket.emit("errorRedirect");
+                if (err) throw err;
                 cursor.toArray(function (err, result) {
-                    if (err) socket.emit("errorRedirect");
+                    if (err) throw err;
                     console.log(result);
                     socket.emit("initRecordsAppointments", result);
                 });

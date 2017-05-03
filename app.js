@@ -697,12 +697,12 @@ io.on("connection", function (socket, res) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) res.redirect("../error");
+            if (err) socket.emit("errorRedirect");
             rconnection = conn;
             r.table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
-                if (err) res.redirect("../error");
+                if (err) socket.emit("errorRedirect");
                 cursor.toArray(function (err, result) {
-                    if (err) res.redirect("../error");
+                    if (err) socket.emit("errorRedirect");
                     console.log(result);
                     socket.emit("initRecordsAppointments", result);
                 });

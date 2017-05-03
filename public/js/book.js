@@ -215,6 +215,12 @@ var vm = new Vue({
         // TO-DO: Implement some sort of check to ensure that the javascript date is compatible with rethink db
         socket.emit("getDateAppointments",today);
 
+        socket.on("errorRedirect",function(){
+
+            window.location.replace("https://staging-walkinexpress.herokuapp.com/error");
+
+        });
+
 
         socket.on("initRecordsAppointments",function(data){
             for (var i = 0; i < data.length; i++) {

@@ -27,7 +27,8 @@ initMap();
 //*** Variable Initialization ***
 //Creates a new date object that only is formated as : mm/dd/yyyy
 
-var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+var today = moment(new Date()).format('YYYYMMDD');
+console.log(today);
 var socket = io.connect();
 
 
@@ -85,7 +86,9 @@ var modal = {
             var phone =  document.getElementById("phoneInput").value;
             var email = document.getElementById("emailInput").value;
 
+
             var valiDate = moment(DOB);
+
             if (!valiDate.isValid()) {
                 valid = false;
 
@@ -211,13 +214,11 @@ var vm = new Vue({
         showModal: false
     },
     mounted: function () {
-
-        // TO-DO: Implement some sort of check to ensure that the javascript date is compatible with rethink db
         socket.emit("getDateAppointments",today);
 
         socket.on("errorRedirect",function(){
 
-            window.location.replace("https://staging-walkinexpress.herokuapp.com/error");
+            window.location.replace("../error");
 
         });
 

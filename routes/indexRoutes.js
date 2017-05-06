@@ -30,7 +30,7 @@ router.get('/privacy', function(req, res, next) {
     res.render('privacy');
 });
 
-router.get('/set', ensureLoggedIn, function(req, res, next) {
+router.get('/set', function(req, res, next) {
     res.render('set', { user: req.user });
 });
 
@@ -40,6 +40,10 @@ router.get('/dayview', ensureLoggedIn, function(req, res, next) {
 
 router.get('/error', function(req, res, next) {
     res.render('error');
+});
+
+router.get('/404', function(req, res, next) {
+    res.render('404');
 });
 
 

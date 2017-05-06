@@ -8,7 +8,7 @@
 
 //*** Variable Initialization ***
 //Creates a new date object that only is formated as : mm/dd/yyyy
-var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+var today = moment(new Date()).format('YYYYMMDD');
 document.getElementById("currentDate").innerHTML = new Date().toDateString();
 
 var socket = io.connect();
@@ -83,7 +83,7 @@ var vm = new Vue({
         // we need to ensure that we don't override the booked appointments already in the array when adding unbooked.
         var index =0;
 
-        socket.on("initBookedAppointmentsSet", function (results, date) {
+        socket.on("initBookedAppointmentsSet", function (results) {
             console.log ( "index:" + index);
             for(var e = 0;e<results.length; e++ ) {
                 //vm.inventory.push({
@@ -103,11 +103,11 @@ var vm = new Vue({
                // index++ keeps track of how many appointments have already been added to the array, so that when we
                // add the unbooked appointments, they dont override the existing entries in the array.
             }
-            socket.emit("getUnbookedAppointments",date);
+            socket.emit("getUnbookedAppointments",today);
         });
 
 
-        socket.on("initUnbookedAppointmentsSet",function(data, date){
+        socket.on("initUnbookedAppointmentsSet",function(data){
             console.log(data.length);
             console.log(index);
 
@@ -134,7 +134,7 @@ var vm = new Vue({
             }
 
 
-            socket.emit('updateRecordsSet',date);
+            socket.emit('updateRecordsSet',today);
         });
 
         socket.on('updateRecordsResultsSet',function(data){
@@ -198,10 +198,11 @@ var modalvm = new Vue({
 function changeDate(){
     socket.emit("closeCursor");
     var date = document.getElementById('datepicker').value;
+    var validDate = moment(date).format('YYYYMMDD');
     console.log(date);
     document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     vm.deleteLocalContent();
-    socket.emit('getBookedAppointments',date);
+    socket.emit('getBookedAppointments',validDate);
 }
 
 // creates the date picker from jquery-ui and populates with today's date

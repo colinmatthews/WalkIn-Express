@@ -2,7 +2,7 @@
  * Created by colin on 11/15/2016.
  */
 
-var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+var today = moment(new Date()).format('YYYYMMDD');
 
 var socket = io.connect();
 socket.emit("getDateAppointments",today);

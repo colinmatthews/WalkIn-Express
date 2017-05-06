@@ -15,8 +15,13 @@ var Auth0Strategy = require('passport-auth0');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
+var moment = require('moment');
+moment().format();
 
-var debug = false;
+var m = moment("2011-10-10T10:20:90");
+m.isValid();
+
+var debug = true;
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients
@@ -100,7 +105,7 @@ app.use(cookieSession({
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
 
 
-}))
+}));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -115,7 +120,7 @@ app.use(function(req, res, next){
 
     // respond with html page
     if (req.accepts('html')) {
-        res.render('error', { url: req.url });
+        res.render('404', { url: req.url });
         return;
     }
 
@@ -201,7 +206,7 @@ io.on("connection", function (socket) {
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
             r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).eqJoin
-            ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
+            ('patient', r.table(patients_table)).without({"right": {"id": true}}).zip()
                 .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
 
                 if (err) throw err;
@@ -451,6 +456,16 @@ io.on("connection", function (socket) {
 
 
     socket.on("getBookedAppointments", function (date) {
+        // date format is : yyyymmdd , string
+        if(dateIsValid(date)){
+            // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+            // only other way is to parse date string manually and then create a date object by passing in each value
+            var validDate = new Date((moment(date).toDate()) + 'UTC');
+        }
+        else {
+            socket.emit('errorRedirect');
+        }
+        console.log(validDate);
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -464,15 +479,15 @@ io.on("connection", function (socket) {
             if (err) throw err;
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
-            r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(date+"UTC"))).eqJoin
-            ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
+            r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).eqJoin
+            ('patient', r.table(patients_table)).without({"right": {"id": true}}).zip()
                 .coerceTo('array').run(rconnection, function (err, cursor) {
 
                 if (err) throw err;
                 cursor.toArray(function (err, result) {
                     if (err) throw err;
                     console.log(result);
-                    socket.emit("initBookedAppointmentsSet", result, date);
+                    socket.emit("initBookedAppointmentsSet", result);
                 });
             });
 
@@ -492,6 +507,15 @@ io.on("connection", function (socket) {
     //
 
     socket.on("getUnbookedAppointments", function (date) {
+        // date format is : yyyymmdd , string
+        if(dateIsValid(date)){
+            // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+            // only other way is to parse date string manually and then create a date object by passing in each value
+            var validDate = new Date((moment(date).toDate()) + 'UTC');
+        }
+        else {
+            socket.emit('errorRedirect');
+        }
         r.connect({
             host: dbConfig.host,
             port: dbConfig.port,
@@ -505,14 +529,14 @@ io.on("connection", function (socket) {
             if (err) throw err;
             rconnection = conn;
             // today's appointments that have patients that have not been viewed
-            r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(date+"UTC")))
+            r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate))
                 .filter({patient: null}).run(rconnection, function (err, cursor) {
 
                     if (err) throw err;
                     cursor.toArray(function (err, result) {
                         if (err) throw err;
                         console.log(result);
-                        socket.emit("initUnbookedAppointmentsSet", result, date);
+                        socket.emit("initUnbookedAppointmentsSet", result);
                     });
                 });
 
@@ -532,8 +556,15 @@ io.on("connection", function (socket) {
     //  After unbooked appointments are added to the schedule
     //
     socket.on("updateRecordsSet", function (date) {
-        var checkDate = new Date(date +'UTC');
-        console.log(checkDate);
+        // date format is : yyyymmdd , string
+        if(dateIsValid(date)){
+            // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+            // only other way is to parse date string manually and then create a date object by passing in each value
+            var validDate = new Date((moment(date).toDate()) + 'UTC');
+        }
+        else {
+            socket.emit('errorRedirect');
+        }
 
         r.connect({
             host: dbConfig.host,
@@ -547,7 +578,7 @@ io.on("connection", function (socket) {
         }, function (err, conn) {
             if (err) throw err;
             rconnection = conn;
-            r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).changes().run(rconnection, function (err, cursor) {
+            r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).changes().run(rconnection, function (err, cursor) {
                 console.log('here');
                 if (err) throw err;
                 myCursor=cursor;
@@ -684,31 +715,38 @@ io.on("connection", function (socket) {
     //  On page load
     //
     socket.on("getDateAppointments", function (date) {
-
-        var checkDate = new Date(date +'UTC');
-        console.log(checkDate);
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
+        // date format is : yyyymmdd , string
+            if(dateIsValid(date)){
+                // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+                // only other way is to parse date string manually and then create a date object by passing in each value
+                var validDate = new Date((moment(date).toDate()) + 'UTC');
             }
-        }, function (err, conn) {
-            if (err) socket.emit("errorRedirect");
-            rconnection = conn;
-            r.table(appointments_table).filter(r.row('timestamp').date().eq(checkDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
+            else {
+                socket.emit('errorRedirect');
+            }
+            console.log(validDate);
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
                 if (err) socket.emit("errorRedirect");
-                cursor.toArray(function (err, result) {
+                rconnection = conn;
+                r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
                     if (err) socket.emit("errorRedirect");
-                    console.log(result);
-                    socket.emit("initRecordsAppointments", result);
+                    cursor.toArray(function (err, result) {
+                        if (err) socket.emit("errorRedirect");
+                        console.log(result);
+                        socket.emit("initRecordsAppointments", result);
+                    });
                 });
-            });
 
-        });
+            });
     });
 
 
@@ -858,6 +896,22 @@ io.on("connection", function (socket) {
         );
 
     });
+
+    function dateIsValid(date) {
+        // date is passed in as a string in the following format : "yyyymmdd"
+        var checkDate = moment(date);
+        // creating checkDate as a moment object allows us to use the isValid method to ensure the date is a valid date
+        return (checkDate.isValid());
+            // the date is then converted back into a native javascript date in UTC to be passed to rethinkDB
+            //return new Date(checkDate.toDate() + 'UTC');
+
+        }
+        /*
+        else{
+            socket.emit('errorRedirect');
+        }
+        */
+
 
 
 });

@@ -27,7 +27,8 @@ initMap();
 //*** Variable Initialization ***
 //Creates a new date object that only is formated as : mm/dd/yyyy
 
-var today = moment(new Date()).format('YYYYMMDD');
+var today = null;
+    //moment(new Date()).format('YYYYMMDD');
 console.log(today);
 var socket = io.connect();
 
@@ -216,9 +217,11 @@ var vm = new Vue({
     mounted: function () {
         socket.emit("getDateAppointments",today);
 
-        socket.on("errorRedirect",function(){
-
+        socket.on("errorRedirect",function(message,err){
+            localStorage.setItem("error", err);
+            localStorage.setItem("message", message);
             window.location.replace("../error");
+
 
         });
 

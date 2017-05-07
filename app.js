@@ -16,12 +16,11 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
 var moment = require('moment');
-moment().format();
 
-var m = moment("2011-10-10T10:20:90");
-m.isValid();
 
-var debug = true;
+const DEBUG = true;
+var appointments_table;
+var patients_table;
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients
@@ -33,6 +32,7 @@ var NeverBounce = require('neverbounce')({
     apiKey: 'Bp4jC20K',
     apiSecret: 'Yzu8C125gtbYR4F'
 });
+
 
 
 // ensure https
@@ -51,13 +51,13 @@ app.use(function (req, res, next) {
 
 
 // Change tables based on production or staging
-if (debug){
-    var appointments_table = 'appointments_staging';
-    var patients_table = 'patients_staging';
+if (DEBUG){
+     appointments_table = 'appointments_staging';
+     patients_table = 'patients_staging';
 }
 else {
-    var appointments_table = 'appointments';
-    var patients_table = 'patients';
+    appointments_table = 'appointments';
+    patients_table = 'patients';
 }
 
 var routes = require('./routes/indexRoutes');
@@ -99,9 +99,7 @@ app.use(cookieSession({
 
     // Cookie Options
 
-    secure: true,
     httpOnly: true,
-    domain: 'walkinexpress.ca',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
 
 
@@ -155,6 +153,7 @@ io.on("connection", function (socket) {
     // created when we run a query with `.changes()` at the end of it.
     var rconnection = null;
     var myCursor = null;
+
     console.log("You connected!");
 
     // caCert is a SSL certificate for connecting to db
@@ -698,8 +697,9 @@ io.on("connection", function (socket) {
 
     });
 
-
-
+    socket.on("getCurrentError",function () {
+        socket.emit('currentError',CURRENT_ERROR);
+    });
 
 
 
@@ -720,33 +720,36 @@ io.on("connection", function (socket) {
                 // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
                 // only other way is to parse date string manually and then create a date object by passing in each value
                 var validDate = new Date((moment(date).toDate()) + 'UTC');
-            }
-            else {
-                socket.emit('errorRedirect');
-            }
-            console.log(validDate);
-            r.connect({
-                host: dbConfig.host,
-                port: dbConfig.port,
-                user: dbConfig.user,
-                password: dbConfig.password,
-                db: dbConfig.db,
-                ssl: {
-                    ca: dbConfig.ssl.ca
-                }
-            }, function (err, conn) {
-                if (err) socket.emit("errorRedirect");
-                rconnection = conn;
-                r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
-                    if (err) socket.emit("errorRedirect");
-                    cursor.toArray(function (err, result) {
-                        if (err) socket.emit("errorRedirect");
-                        console.log(result);
-                        socket.emit("initRecordsAppointments", result);
+
+                console.log(validDate);
+                r.connect({
+                    host: dbConfig.host,
+                    port: dbConfig.port,
+                    user: dbConfig.user,
+                    password: dbConfig.password,
+                    db: dbConfig.db,
+                    ssl: {
+                        ca: dbConfig.ssl.ca
+                    }
+                }, function (err, conn) {
+                    if (err) serverError("Cannot connect to database.",err.stack);
+                    rconnection = conn;
+                    r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
+                        if (err) serverError("Cannot complete query.",err.stack);
+                        cursor.toArray(function (err, result) {
+                            if (err) serverError("Cannot format query response.",err.stack);
+                            console.log(result);
+                            socket.emit("initRecordsAppointments", result);
+                        });
                     });
+
                 });
 
-            });
+            }
+            else {
+                serverError("Invalid date when retrieving today's appointments.",new Error().stack);
+            }
+
     });
 
 
@@ -820,10 +823,10 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) throw err;
+            if (err) socket.emit('errorRedirect');
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).update({patient: patientID}).run(rconnection, function (err, cursor) {
-                if (err) throw err;
+                if (err) socket.emit('errorRedirect');
                 console.log("UPDATE APPOINTMENT VIEWED " + cursor);
             });
         });
@@ -853,10 +856,10 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) throw err;
+            if (err) socket.emit('errorRedirect');
             rconnection = conn;
             r.table(appointments_table).get(appointmentID)("patient").run(rconnection, function (err, result) {
-                if (err) throw err;
+                if (err) socket.emit('errorRedirect');
                 console.log(result);
                 socket.emit("checkAvailabilityResults", result);
 
@@ -892,6 +895,7 @@ io.on("connection", function (socket) {
                 // errors will bubble up through the reject method of the promise.
                 // you'll want to console.log them otherwise it'll fail silently
                 console.log(error);
+                socket.emit('errorRedirect');
             }
         );
 
@@ -902,16 +906,17 @@ io.on("connection", function (socket) {
         var checkDate = moment(date);
         // creating checkDate as a moment object allows us to use the isValid method to ensure the date is a valid date
         return (checkDate.isValid());
-            // the date is then converted back into a native javascript date in UTC to be passed to rethinkDB
-            //return new Date(checkDate.toDate() + 'UTC');
+    }
 
+    function serverError(message, err){
+        if (app.get('env') === 'development')
+        {
+            socket.emit('errorRedirect', message, err);
         }
-        /*
         else{
-            socket.emit('errorRedirect');
+            socket.emit('errorRedirect', message,'');
         }
-        */
-
+    }
 
 
 });

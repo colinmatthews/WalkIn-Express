@@ -14,11 +14,20 @@ block content
         .container
             row
                 .col-lg-5.col-sm-6
-                    hr.section-heading-spacer
-                    .clearfix
-                    h2.section-heading
-                        | Something went wrong!
-                    p.lead
-                        | Please contact support at support@walkinexpress.ca
+                    #app
+                        hr.section-heading-spacer
+                        .clearfix
+                        h2.section-heading
+                            | Something went wrong!
+                        p
+                            | {{message}}
+                        p
+                            | {{error}}
+                        p.lead
+                            | Please contact support at support@walkinexpress.ca
 
 
+    script(src='/socket.io/socket.io.js')
+    script(src='../public/external/vue.js')
+    script(src='/public/external/moment.js')
+    script(src='/public/js/error.js')

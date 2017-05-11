@@ -12,11 +12,10 @@ var r = require('rethinkdb');
 var fs = require("fs");
 var passport = require('passport');
 var Auth0Strategy = require('passport-auth0');
-var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
 var moment = require('moment');
-
+var validator = require('validator');
 
 const DEBUG = true;
 var appointments_table;
@@ -95,7 +94,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieSession({
     name: 'session',
-    keys: ['key12'],
+    keys: ['key1'],
 
     // Cookie Options
 
@@ -188,35 +187,43 @@ io.on("connection", function (socket) {
      Context:
      called at the beginning of dashboard.js
      */
-    socket.on("getInitialPatients", function (today) {
-        console.log("Today in getInitialPatients");
-        console.log(today);
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            // today's appointments that have patients that have not been viewed
-            r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).eqJoin
-            ('patient', r.table(patients_table)).without({"right": {"id": true}}).zip()
-                .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
+    socket.on("getInitialPatients", function (date) {
+        if(dateIsValid(date)) {
+            // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+            // only other way is to parse date string manually and then create a date object by passing in each value
+            var validDate = new Date((moment(date).toDate()) + 'UTC');
 
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("initRecords", result);
+            console.log("Today in getInitialPatients");
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                // today's appointments that have patients that have not been viewed
+                r.table(appointments_table).filter(r.row('timestamp').date().eq(new Date(validDate))).eqJoin
+                ('patient', r.table(patients_table)).without({"right": {"id": true}}).zip()
+                    .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
+
+                    if (err) queryError(err);
+                    cursor.toArray(function (err, result) {
+                        if (err) responseError(err);
+                        console.log(result);
+                        socket.emit("initRecords", result);
+                    });
                 });
-            });
 
-        });
+            });
+        }
+        else{
+            serverError("Error 1A, Invalid date when retrieving today's appointments.",new Error().stack);
+        }
     });
 
     //
@@ -233,28 +240,37 @@ io.on("connection", function (socket) {
     //**When:**
     //  Called after getInitialPatients is called.
     //
-    socket.on("updateAppointmentsDashboard", function (today) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(today+"UTC"))).changes().run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                cursor.each(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("updateAppointmentsDashboardResults", result);
+    socket.on("updateAppointmentsDashboard", function (date) {
+        if(dateIsValid(date)) {
+            // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+            // only other way is to parse date string manually and then create a date object by passing in each value
+            var validDate = new Date((moment(date).toDate()) + 'UTC');
+
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
+                    if (err) queryError(err);
+                    cursor.each(function (err, result) {
+                        if (err)responseError(err);
+                        console.log(result);
+                        socket.emit("updateAppointmentsDashboardResults", result);
+                    });
                 });
             });
-        });
+        }
+        else{
+            serverError("Error 1B,Invalid date when retrieving today's appointments.",new Error().stack);
+        }
     });
 
     //  ***getPatient***
@@ -271,28 +287,29 @@ io.on("connection", function (socket) {
     //
 
     socket.on("getPatient", function (patientID) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table(patients_table).filter({id: patientID}).run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("newAppointmentPatientData", result);
 
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                r.table(patients_table).filter({id: patientID}).run(rconnection, function (err, cursor) {
+                    if (err) queryError(err);
+                    cursor.toArray(function (err, result) {
+                        if (err) responseError(err);
+                        console.log(result);
+                        socket.emit("newAppointmentPatientData", result);
+
+                    });
                 });
             });
-        });
     });
 
     //  ***confirmAppointment***
@@ -310,7 +327,7 @@ io.on("connection", function (socket) {
 
 
     socket.on('confirmAppointment',function(userEmail,err){
-        if(err)throw err;
+        if(err)serverError("Cannot confirm appointment.",new Error().stack);
         console.log("confirm");
 
         client.transmissions.send({
@@ -341,7 +358,7 @@ io.on("connection", function (socket) {
     //
 
     socket.on('denyAppointment',function(userEmail, err){
-        if(err)throw err;
+        if(err)throw serverError("Cannot deny appointment",new Error().stack);
         console.log("deny");
         console.log(userEmail);
         client.transmissions.send({
@@ -372,23 +389,25 @@ io.on("connection", function (socket) {
     //
 
     socket.on("setViewed", function (appointmentID) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table(appointments_table).get(appointmentID).update({viewed: true}).run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                console.log("UPDATE APPOINTMENT VIEWED " + cursor);
+
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                r.table(appointments_table).get(appointmentID).update({viewed: true}).run(rconnection, function (err, cursor) {
+                    if (err) queryError(err);
+                    console.log("UPDATE APPOINTMENT VIEWED " + cursor);
+                });
             });
-        });
+
     });
 
     //  ***remakeAppointmentSlot***
@@ -415,7 +434,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) throw err;
+            if (err) connectionError(err);
             rconnection = conn;
 
             r.table(appointments_table).insert({
@@ -425,7 +444,7 @@ io.on("connection", function (socket) {
                 "displayTime": displayTime,
                 timestamp: new Date(date+"UTC")
             }).run(rconnection, function (err, cursor) {
-                if (err) throw err;
+                if (err) queryError(err);
                 console.log("NEW APPOINTMENT MADE " + cursor);
             });
         });
@@ -460,37 +479,38 @@ io.on("connection", function (socket) {
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
             var validDate = new Date((moment(date).toDate()) + 'UTC');
+
+            console.log(validDate);
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                // today's appointments that have patients that have not been viewed
+                r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).eqJoin
+                ('patient', r.table(patients_table)).without({"right": {"id": true}}).zip()
+                    .coerceTo('array').run(rconnection, function (err, cursor) {
+
+                    if (err) queryError(err);
+                    cursor.toArray(function (err, result) {
+                        if (err) responseError(err);
+                        console.log(result);
+                        socket.emit("initBookedAppointmentsSet", result);
+                    });
+                });
+
+            });
         }
         else {
-            socket.emit('errorRedirect');
+            serverError("Error 1C,Invalid date when retrieving today's appointments.",new Error().stack);
         }
-        console.log(validDate);
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            // today's appointments that have patients that have not been viewed
-            r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).eqJoin
-            ('patient', r.table(patients_table)).without({"right": {"id": true}}).zip()
-                .coerceTo('array').run(rconnection, function (err, cursor) {
-
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("initBookedAppointmentsSet", result);
-                });
-            });
-
-        });
     });
 
     //  ***getUnbookedAppointments***
@@ -511,35 +531,36 @@ io.on("connection", function (socket) {
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
             var validDate = new Date((moment(date).toDate()) + 'UTC');
-        }
-        else {
-            socket.emit('errorRedirect');
-        }
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            // today's appointments that have patients that have not been viewed
-            r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate))
-                .filter({patient: null}).run(rconnection, function (err, cursor) {
 
-                    if (err) throw err;
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                // today's appointments that have patients that have not been viewed
+                r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate))
+                    .filter({patient: null}).run(rconnection, function (err, cursor) {
+
+                    if (err) queryError(err);
                     cursor.toArray(function (err, result) {
-                        if (err) throw err;
+                        if (err) responseError(err);
                         console.log(result);
                         socket.emit("initUnbookedAppointmentsSet", result);
                     });
                 });
 
-        });
+            });
+        }
+        else {
+            serverError("Error 1D,Invalid date when retrieving today's appointments.",new Error().stack);
+        }
     });
 
 
@@ -560,35 +581,36 @@ io.on("connection", function (socket) {
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
             var validDate = new Date((moment(date).toDate()) + 'UTC');
-        }
-        else {
-            socket.emit('errorRedirect');
-        }
 
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).changes().run(rconnection, function (err, cursor) {
-                console.log('here');
-                if (err) throw err;
-                myCursor=cursor;
-                myCursor.each(function (err, result) {
-                    if (err) throw err;
-                    console.log(" ***** " + result);
-                    socket.emit("updateRecordsResultsSet", result);
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).changes().run(rconnection, function (err, cursor) {
+                    console.log('here');
+                    if (err) queryError(err);
+                    myCursor=cursor;
+                    myCursor.each(function (err, result) {
+                        if (err) responseError(err);
+                        console.log(" ***** " + result);
+                        socket.emit("updateRecordsResultsSet", result);
 
+                    });
                 });
             });
-        });
+        }
+
+        else {
+            serverError("Error 1E,Invalid date when retrieving today's appointments.",new Error().stack);
+        }
     });
 
     ///  ***closeCursor***
@@ -620,23 +642,24 @@ io.on("connection", function (socket) {
     //  On delete button
     //
     socket.on("deleteAppointment", function (appointmentID) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table(appointments_table).get(appointmentID).delete().run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                console.log("DELETE APPOINTMENT DATA " + cursor);
+
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
+                r.table(appointments_table).get(appointmentID).delete().run(rconnection, function (err, cursor) {
+                    if (err) queryError(err);
+                    console.log("DELETE APPOINTMENT DATA " + cursor);
+                });
             });
-        });
     });
 
     //  ***newAppointmentSlot***
@@ -662,7 +685,7 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) throw err;
+            if (err) connectionError(err);
             rconnection = conn;
             var displayTime;
             if( hour > 12){
@@ -690,17 +713,12 @@ io.on("connection", function (socket) {
                 "displayTime": displayTime,
                 timestamp: new Date(date+"UTC")
             }).run(rconnection, function (err, cursor) {
-                if (err) throw err;
+                if (err) queryError(err);
                 console.log("NEW APPOINTMENT MADE " + cursor);
             });
         });
 
     });
-
-    socket.on("getCurrentError",function () {
-        socket.emit('currentError',CURRENT_ERROR);
-    });
-
 
 
     //  ***getDateAppointments***
@@ -732,12 +750,14 @@ io.on("connection", function (socket) {
                         ca: dbConfig.ssl.ca
                     }
                 }, function (err, conn) {
-                    if (err) serverError("Cannot connect to database.",err.stack);
+                    if (err) connectionError(err);
                     rconnection = conn;
                     r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
-                        if (err) serverError("Cannot complete query.",err.stack);
+                        if (err) queryError(err);
+                        // implement next(err);
+                        // and error handling
                         cursor.toArray(function (err, result) {
-                            if (err) serverError("Cannot format query response.",err.stack);
+                            if (err) responseError(err);
                             console.log(result);
                             socket.emit("initRecordsAppointments", result);
                         });
@@ -747,7 +767,7 @@ io.on("connection", function (socket) {
 
             }
             else {
-                serverError("Invalid date when retrieving today's appointments.",new Error().stack);
+                serverError("Error 1F,Invalid date when retrieving today's appointments.",new Error().stack);
             }
 
     });
@@ -769,34 +789,76 @@ io.on("connection", function (socket) {
     //
 
     socket.on("createPatient", function (data) {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-            r.table(patients_table).insert({
-                "DOB": data.DOB,
-                "address": data.address,
-                "doctor_id": data.doctor_id,
-                "name": data.name,
-                "phone": data.phone,
-                "email":data.email
-            }).run(rconnection, function (err, cursor) {
-                if (err) throw err;
-                console.log("NEW PATIENT MADE ");
-                var id = cursor.generated_keys[0];
-                socket.emit("newPatientID", id);
-                console.log(id);
 
-            });
-        });
+
+        var dob = data.DOB;
+        var address = data.address;
+        var name = data.name;
+        var phone = data.phone;
+        var email = data.email;
+
+        if(dateIsValid(dob)) {
+
+            if(!validator.isEmpty(address)){
+
+                if(!validator.isEmpty(name)){
+
+                    if(validator.isNumeric(phone)){
+
+                        if (validator.isEmail(email)) {
+
+                            r.connect({
+                                host: dbConfig.host,
+                                port: dbConfig.port,
+                                user: dbConfig.user,
+                                password: dbConfig.password,
+                                db: dbConfig.db,
+                                ssl: {
+                                    ca: dbConfig.ssl.ca
+                                }
+                            }, function (err, conn) {
+                                if (err) connectionError(err);
+                                rconnection = conn;
+                                r.table(patients_table).insert({
+                                    "DOB": data.DOB,
+                                    "address": data.address,
+                                    "doctor_id": data.doctor_id,
+                                    "name": data.name,
+                                    "phone": data.phone,
+                                    "email": data.email
+                                }).run(rconnection, function (err, cursor) {
+                                    if (err) queryError(err);
+                                    console.log("NEW PATIENT MADE ");
+                                    var id = cursor.generated_keys[0];
+                                    socket.emit("newPatientID", id);
+                                    console.log(id);
+
+                                });
+                            });
+                        }
+                        else{
+                            serverError("Invalid email.",new Error().stack);
+                        }
+                    }
+                    else{
+                        serverError("Invalid phone.",new Error().stack);
+                    }
+
+                }
+                else{
+                    serverError("Invalid name.",new Error().stack);
+                }
+
+            }
+            else{
+                serverError("Invalid address.",new Error().stack);
+            }
+
+
+        }
+        else{
+            serverError("Invalid Date of Birth.",new Error().stack);
+        }
 
     });
 
@@ -823,10 +885,10 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) socket.emit('errorRedirect');
+            if (err) connectionError(err);
             rconnection = conn;
             r.table(appointments_table).get(appointmentID).update({patient: patientID}).run(rconnection, function (err, cursor) {
-                if (err) socket.emit('errorRedirect');
+                if (err) queryError(err);
                 console.log("UPDATE APPOINTMENT VIEWED " + cursor);
             });
         });
@@ -856,10 +918,10 @@ io.on("connection", function (socket) {
                 ca: dbConfig.ssl.ca
             }
         }, function (err, conn) {
-            if (err) socket.emit('errorRedirect');
+            if (err) connectionError(err);
             rconnection = conn;
             r.table(appointments_table).get(appointmentID)("patient").run(rconnection, function (err, result) {
-                if (err) socket.emit('errorRedirect');
+                if (err) queryError(err);
                 console.log(result);
                 socket.emit("checkAvailabilityResults", result);
 
@@ -895,7 +957,7 @@ io.on("connection", function (socket) {
                 // errors will bubble up through the reject method of the promise.
                 // you'll want to console.log them otherwise it'll fail silently
                 console.log(error);
-                socket.emit('errorRedirect');
+                serverError('Unable to contact email validation service', new Error().stack);
             }
         );
 
@@ -916,6 +978,18 @@ io.on("connection", function (socket) {
         else{
             socket.emit('errorRedirect', message,'');
         }
+    }
+
+    function connectionError(err){
+        serverError('Cannot connect to the database.', err.stack);
+    }
+
+    function queryError(err){
+        serverError('Cannot complete query.', err.stack);
+    }
+
+    function responseError(err){
+        serverError('Cannot format query response.', err.stack);
     }
 
 

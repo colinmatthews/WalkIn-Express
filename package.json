@@ -24,6 +24,7 @@
     "rethinkdb": "^2.3.3",
     "socket.io": "^1.5.1",
     "sparkpost": "^2.1.2",
+    "validator": "^7.0.0",
     "vue": "^2.2.6"
   }
 }

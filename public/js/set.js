@@ -8,6 +8,7 @@
 
 //*** Variable Initialization ***
 //Creates a new date object that only is formated as : mm/dd/yyyy
+
 var today = moment(new Date()).format('YYYYMMDD');
 document.getElementById("currentDate").innerHTML = new Date().toDateString();
 
@@ -78,10 +79,18 @@ var vm = new Vue({
         // tempArray is a property of vm so that it can be accessed by methods, such as deleteLocalContent. If it is setup as
         // a local array inside this scope, we wont be able to clear it using the delete method, and will end up adding duplicate dates.
         //
-        // var index is used to keep track of how many appointments have been added to the temp array. It is used to
+        // var index is used to keep track of how many appointments have been added to the temp array. We use it to
         // keep track of the last filled position in the array. Because we add bookedAppointments and then unbooked appointments,
         // we need to ensure that we don't override the booked appointments already in the array when adding unbooked.
         var index =0;
+
+        socket.on("errorRedirect",function(message,err){
+            localStorage.setItem("error", err);
+            localStorage.setItem("message", message);
+            window.location.replace("../error");
+
+
+        });
 
         socket.on("initBookedAppointmentsSet", function (results) {
             console.log ( "index:" + index);

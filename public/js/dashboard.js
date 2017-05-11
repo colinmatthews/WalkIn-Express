@@ -120,6 +120,15 @@ var vm = new Vue({
         //**When:**
         //  After getInitialPatients returns its value
         //
+        socket.on("errorRedirect",function(message,err){
+            localStorage.setItem("error", err);
+            localStorage.setItem("message", message);
+            window.location.replace("../error");
+
+
+        });
+
+
         socket.on("initRecords",function(data) {
             for (var i = 0; i < data.length; i++) {
                 if(data[i].patient!=null) {

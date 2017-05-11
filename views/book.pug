@@ -9,10 +9,11 @@ block navbar
 
 
 block content
-
     content-section-a
+
         .container
             .row
+
                 hr.section-heading-spacer
                 .clearfix
                 h2.section-heading Book Your Appointment
@@ -26,6 +27,8 @@ block content
                         br
                         |
                         b#noBookings No appointments available!
+
+
     script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyC0MxRy96T3Hkl4btgbVrLjWDoWUt4GMug', async='', defer='')
 
     template#appointment
@@ -33,7 +36,7 @@ block content
             .list-group-item.clearfix
                 p {{ item.displayTime }}
                 |
-                button#show-modal.btn.btn-danger(v-on:click='showModal = true') Book Appointment
+                button#show-modal.btn.btn-danger.show-modal( data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing Order") Book Appointment
                 modal(v-if='showModal', @close='showModal = false', v-bind:item='item')
 
     template#modal-template
@@ -98,9 +101,10 @@ block content
                                         a(href='/privacy', target='_blank')  privacy policy.
                             .modal-footer
                                 #footer
+                                    div(id ="loader")
                                     button.btn.btn-danger.book-btn(@click="$emit('close')") Close
                                     |
-                                    button#submit.btn.btn-primary.book-btn(style='float:right;', v-on:click='validateForm(item.id)', disabled='') Book!
+                                    button#submit.btn.btn-primary.book-btn(style='float:right;', v-on:click='validateForm(item.id)', disabled='', data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> Processing Order" ) Book!
 
     script(src='/socket.io/socket.io.js')
     script(src='/public/external/moment.js')

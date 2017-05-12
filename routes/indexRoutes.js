@@ -30,7 +30,7 @@ router.get('/privacy', function(req, res, next) {
     res.render('privacy');
 });
 
-router.get('/set', function(req, res, next) {
+router.get('/set', ensureLoggedIn,function(req, res, next) {
     res.render('set', { user: req.user });
 });
 

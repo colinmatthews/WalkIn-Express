@@ -16,6 +16,9 @@ var bodyParser = require('body-parser');
 var cookieSession = require('cookie-session');
 var moment = require('moment');
 var validator = require('validator');
+var helmet = require('helmet');
+
+app.use(helmet());
 
 const DEBUG = true;
 var appointments_table;
@@ -93,13 +96,15 @@ app.use("/public", express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieSession({
-    name: 'session',
+    name: 'googoogaagah',
     keys: ['key1'],
 
-    // Cookie Options
-    httpOnly: true,
-    secure:true,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    cookie: {
+        secure: true,
+        httpOnly: true,
+        domain: 'https://staging-walkinexpress.herokuapp.com',
+        expires: 24 * 60 * 60 * 1000 // 24 hours
+    }
 
 
 }));

@@ -16,6 +16,7 @@
     "docco": "^0.7.0",
     "express": "^4.14.0",
     "express-session": "^1.15.2",
+    "helmet": "^3.6.0",
     "moment": "^2.18.1",
     "neverbounce": "^0.2.6",
     "passport": "^0.3.2",

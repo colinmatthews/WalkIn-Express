@@ -1,6 +1,8 @@
 extends base
 
 block navbar
+    link(href='../public/css/book.css', rel='stylesheet')
+    link(href='../public/css/modal.css', rel='stylesheet')
     nav.navbar.navbar-default.navbar-fixed-top.topnav(role='navigation')
         .container.topnav
             .navbar-header
@@ -9,6 +11,7 @@ block navbar
 
 
 block content
+
     content-section-a
 
         .container
@@ -108,10 +111,6 @@ block content
 
     script(src='/socket.io/socket.io.js')
     script(src='/public/external/moment.js')
-
-    link(href='https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css', rel='stylesheet', integrity='sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN', crossorigin='anonymous')
-    link(href='../public/css/book.css', rel='stylesheet')
-    link(href='../public/css/modal.css', rel='stylesheet')
     script(src='../public/external/vue.js')
     script(src='../public/js/book.js')
 

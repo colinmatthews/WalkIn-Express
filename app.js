@@ -19,6 +19,10 @@ var validator = require('validator');
 var helmet = require('helmet');
 
 app.use(helmet());
+var sixtyDaysInSeconds = 5184000;
+app.use(helmet.hsts({
+    maxAge: sixtyDaysInSeconds
+}));
 
 const DEBUG = true;
 var appointments_table;

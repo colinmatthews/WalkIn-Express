@@ -18,15 +18,13 @@ var moment = require('moment');
 var validator = require('validator');
 var helmet = require('helmet');
 
-app.use(helmet());
-var sixtyDaysInSeconds = 5184000;
-app.use(helmet.hsts({
-    maxAge: sixtyDaysInSeconds
-}));
 
 const DEBUG = true;
+const domain = "https://staging-walkinexpress.herokuapp.com";
+
 var appointments_table;
 var patients_table;
+
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients
@@ -39,6 +37,11 @@ var NeverBounce = require('neverbounce')({
     apiSecret: 'Yzu8C125gtbYR4F'
 });
 
+app.use(helmet());
+var sixtyDaysInSeconds = 5184000;
+app.use(helmet.hsts({
+    maxAge: sixtyDaysInSeconds
+}));
 
 
 // ensure https
@@ -48,7 +51,7 @@ app.use(function (req, res, next) {
     if (process.env.NODE_ENV === 'production' &&
         req.headers['x-forwarded-proto'] !== 'https') {
 
-        sslUrl = ['https://www.walkinexpress.ca', req.url].join('');
+        sslUrl = [domain, req.url].join('');
         return res.redirect(sslUrl);
     }
 
@@ -106,7 +109,7 @@ app.use(cookieSession({
     cookie: {
         secure: true,
         httpOnly: true,
-        domain: 'https://staging-walkinexpress.herokuapp.com',
+        domain: domain, // change this when pushing to live
         expires: 24 * 60 * 60 * 1000 // 24 hours
     }
 

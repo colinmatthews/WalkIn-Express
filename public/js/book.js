@@ -152,7 +152,8 @@ var modal = {
 
                         }
                         else{
-                            window.location.replace("/failure");
+                            localStorage.setItem("error", 'That appointment has already been booked!');
+                            window.location.replace("../error");
                         }
 
                     });

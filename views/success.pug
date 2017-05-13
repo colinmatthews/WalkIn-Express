@@ -10,13 +10,25 @@ block navbar
 
 block content
     link(href='../public/css/index.css', rel='stylesheet')
-    .intro-header
-        .container
-            .row
-                .col-lg-12
-                    .intro-message
-                        h1 Never Wait Again
-                        hr.intro-divider
-                        ul.list-inline.intro-social-buttons
-                            p(style='font-size: 30px;')
-                                | Congratulations! You just made an appointment with walk-in express. Please review the following instructions.
+    style(type="text/css").
+
+        .step {
+
+            max-height:40%;
+
+        }
+        .section-heading{
+            padding-top:11% ;
+            text-align: center;
+        }
+
+    .container
+        .row
+            h2.section-heading
+                | Thanks for booking with Walk-In Express!
+            .col-sm-4
+                img(src ='../public/img/StepOne.png', class="step img-responsive")
+            .col-sm-4
+                img(src ='../public/img/StepTwo.png',class="step img-responsive")
+            .col-sm-4
+                img(src ='../public/img/StepThree.png',class="step img-responsive")

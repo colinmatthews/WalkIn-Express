@@ -20,8 +20,8 @@ var helmet = require('helmet');
 
 
 const DEBUG = true;
-const domain = "https://staging-walkinexpress.herokuapp.com";
 
+var domain;
 var appointments_table;
 var patients_table;
 
@@ -38,11 +38,11 @@ var NeverBounce = require('neverbounce')({
 });
 
 app.use(helmet());
-var sixtyDaysInSeconds = 5184000;
-app.use(helmet.hsts({
-    maxAge: sixtyDaysInSeconds
-}));
 
+
+app.use(helmet.hsts({
+    maxAge: 15552000  // 180 days in seconds
+}));
 
 // ensure https
 app.use(function (req, res, next) {
@@ -63,10 +63,12 @@ app.use(function (req, res, next) {
 if (DEBUG){
      appointments_table = 'appointments_staging';
      patients_table = 'patients_staging';
+     domain = "https://staging-walkinexpress.herokuapp.com";
 }
 else {
     appointments_table = 'appointments';
     patients_table = 'patients';
+    domain = "https://walkinexpress.ca";
 }
 
 var routes = require('./routes/indexRoutes');
@@ -109,7 +111,7 @@ app.use(cookieSession({
     cookie: {
         secure: true,
         httpOnly: true,
-        domain: domain, // change this when pushing to live
+        domain: domain, //
         expires: 24 * 60 * 60 * 1000 // 24 hours
     }
 

@@ -19,7 +19,7 @@ var validator = require('validator');
 var helmet = require('helmet');
 
 
-const DEBUG = true;
+const DEBUG = false;
 
 var domain;
 var appointments_table;

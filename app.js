@@ -383,16 +383,18 @@ io.on("connection", function (socket) {
         if(err)throw serverError("Cannot deny appointment",new Error().stack);
         console.log("deny");
         console.log(userEmail);
-        client.transmissions.send({
-            content: {
-                from: 'testing@walkinexpress.ca',
-                subject: 'Your Appointment Was Denied',
-                html:'<html><body>' +
-                '<p> There was a problem with your information when trying to book an appointment. Please visit the clinic to seek care while we try to sort this out!</p><br><p>Thanks for using Walk-In Express!</p></body></html>'
-            },
-            recipients: [
-                {address: userEmail}
-            ]
+
+        fs.readFile(__dirname + '/templates/denyEmail.html', 'utf8', function (err, html) {
+            client.transmissions.send({
+                content: {
+                    from: 'testing@walkinexpress.ca',
+                    subject: 'Your Appointment Was Denied',
+                    html: html
+                },
+                recipients: [
+                    {address: userEmail}
+                ]
+            });
         });
 
     });

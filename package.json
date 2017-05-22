@@ -22,6 +22,7 @@
     "passport": "^0.3.2",
     "passport-auth0": "^0.6.0",
     "pug": "^2.0.0-beta.12",
+    "push.js": "0.0.13",
     "rethinkdb": "^2.3.3",
     "socket.io": "^1.5.1",
     "sparkpost": "^2.1.2",

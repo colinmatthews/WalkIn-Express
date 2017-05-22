@@ -237,7 +237,6 @@ var vm = new Vue({
                     id: data.new_val.id,
                     patient:data.new_val.patient,
                     displayTime:data.new_val.displayTime});
-
             }
 
             // if an existing appointment is deleted

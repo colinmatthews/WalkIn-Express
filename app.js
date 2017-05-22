@@ -18,6 +18,8 @@ var moment = require('moment');
 var validator = require('validator');
 var helmet = require('helmet');
 
+
+
 // ensure https
 app.use(function (req, res, next) {
     var sslUrl;
@@ -237,6 +239,7 @@ io.on("connection", function (socket) {
                         if (err) responseError(err);
                         console.log(result);
                         socket.emit("initRecords", result);
+
                     });
                 });
 
@@ -285,6 +288,8 @@ io.on("connection", function (socket) {
                         if (err)responseError(err);
                         console.log(result);
                         socket.emit("updateAppointmentsDashboardResults", result);
+
+
                     });
                 });
             });
@@ -626,6 +631,7 @@ io.on("connection", function (socket) {
                         if (err) responseError(err);
                         console.log(" ***** " + result);
                         socket.emit("updateRecordsResultsSet", result);
+
 
                     });
                 });

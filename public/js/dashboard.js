@@ -20,10 +20,6 @@ var socket = io.connect();
 socket.emit("getInitialPatients", today);
 
 
-
-
-
-
 //***
 //*** Vue JS Components and Functions ***
 
@@ -160,9 +156,9 @@ var vm = new Vue({
             /* if an existing appointment is deleted
 
              */
-            if(data.new_val == null || data.new_val.viewed == true) {
+            if(data.new_val === null || data.new_val.viewed === true) {
                 for (var i = 0; i < vm.inventory.length; i ++) {
-                    if (vm.inventory[i].id == data.old_val.id) {
+                    if (vm.inventory[i].id === data.old_val.id) {
                         vm.inventory.splice(i,1);
                     }
                 }
@@ -172,7 +168,7 @@ var vm = new Vue({
 
              */
             else{
-                if(data.new_val.patient!=null && data.new_val.viewed == false) {
+                if(data.new_val.patient!==null && data.new_val.viewed === false) {
                     socket.emit("getPatient",data.new_val.patient);
                     socket.on("newAppointmentPatientData",function(results){
 
@@ -188,6 +184,15 @@ var vm = new Vue({
                                 name: results[n].name,
                                 patient: results[n].patient
                             });
+                        }
+                    });
+
+                    Push.create("New Appointment!", {
+                        body: "A patient just reserved an appointment.",
+                        icon: '../public/img/logo.png',
+                        onClick: function () {
+                            window.focus();
+                            this.close();
                         }
                     });
                 }

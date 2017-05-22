@@ -13,6 +13,9 @@ var today = moment(new Date()).format('YYYYMMDD');
 document.getElementById("currentDate").innerHTML = new Date().toDateString();
 
 var socket = io.connect();
+var changeDateButton =document.getElementById('changeDate');
+changeDateButton.disabled = true;
+
 socket.emit("getBookedAppointments", today);
 
 //*** Vue JS Components and Functions ***
@@ -143,6 +146,8 @@ var vm = new Vue({
             }
 
 
+            changeDateButton.disabled=false;
+            changeDateButton.innerHTML = "Change Date"
             socket.emit('updateRecordsSet',today);
         });
 
@@ -205,14 +210,21 @@ var modalvm = new Vue({
 
 // Changes the current date, called by 'Change Date' button
 function changeDate(){
+    changeDateButton =document.getElementById('changeDate');
+    changeDateButton.disabled=true;
+    changeDateButton.innerHTML = "Loading...";
+
     socket.emit("closeCursor");
+
     var date = document.getElementById('datepicker').value;
     var validDate = moment(date).format('YYYYMMDD');
     today = validDate;
+
     console.log(date);
     document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     vm.deleteLocalContent();
     socket.emit('getBookedAppointments',validDate);
+
 }
 
 // creates the date picker from jquery-ui and populates with today's date

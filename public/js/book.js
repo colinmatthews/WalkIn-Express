@@ -9,27 +9,19 @@
 
 
 
-    // *** Google Maps Initialization **
-    function initMap() {
-        var uluru = {lat:42.296113, lng:-83.047560};
-        var map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 13,
-            center: uluru
-        });
-        var marker = new google.maps.Marker({
-            position: uluru,
-            map: map
-        });
-    }
-    initMap();
+
 
 
     //*** Variable Initialization ***
     //Creates a new date object that only is formated as : mm/dd/yyyy
 
-    var today = moment(new Date()).format('YYYYMMDD');
-    console.log(today);
-    var socket = io.connect();
+
+var today = moment(new Date()).format('YYYYMMDD');
+console.log(today);
+var socket = io.connect();
+socket.emit("getDateAppointments",today);
+
+
 
 
 //*** Vue JS Components and Functions ***
@@ -213,7 +205,6 @@ var vm = new Vue({
         showModal: false
     },
     mounted: function () {
-        socket.emit("getDateAppointments",today);
 
         socket.on("errorRedirect",function(message,err){
             localStorage.setItem("error", err);

@@ -23,13 +23,14 @@ h6 {
 #success_message{
     display: none;
 }
-#map {
-    height: 400px;
-    width: 700px;
-    float:right;
-    max-width: 60%;
+
+
+.block {
+    /*float: left;*/
+    display: inline-block;
 
 }
+
 
 .navbar-default {
     background-color: #f8f8f8;
@@ -197,6 +198,9 @@ h6 {
 }
 
 @media(max-width:1354px) {
+    .img-responsive{
+        padding-left: 20%;
+    }
     .navbar-brand > img{
         margin-left: 0;
     }

@@ -18,8 +18,15 @@ var moment = require('moment');
 var validator = require('validator');
 var helmet = require('helmet');
 
+var DEBUG;
 
-const DEBUG = false;
+if (app.get('env') === 'development')
+{
+     DEBUG = true;
+}
+else{
+     DEBUG = false;
+}
 
 var domain;
 var appointments_table;
@@ -340,22 +347,23 @@ io.on("connection", function (socket) {
     //
 
 
-    socket.on('confirmAppointment',function(userEmail,err){
-        if(err)serverError("Cannot confirm appointment.",new Error().stack);
+    socket.on('confirmAppointment',function(userEmail,err) {
+        if (err) serverError("Cannot confirm appointment.", new Error().stack);
         console.log("confirm");
 
-        client.transmissions.send({
-            content: {
-                from: 'testing@walkinexpress.ca',
-                subject: 'Your Appointment Was Confirmed!',
-                html:'<html><body>' +
-                '<p> Your appointment has been confirmed!</p><br><p>Thanks for using Walk-In Express!</p></body></html>'
-            },
-            recipients: [
-                {address:userEmail}
-            ]
-        });
+        fs.readFile(__dirname + '/templates/acceptEmail.html', 'utf8', function (err, html) {
+            client.transmissions.send({
+                content: {
+                    from: 'no-reply@walkinexpress.ca',
+                    subject: 'Your Appointment Was Confirmed!See your next steps.',
+                    html:html
+                },
+                recipients: [
+                    {address: userEmail}
+                ]
+            });
 
+        });
     });
 
     //  ***denyAppointment***

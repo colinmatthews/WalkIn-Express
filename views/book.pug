@@ -20,16 +20,18 @@ block content
                 hr.section-heading-spacer
                 .clearfix
                 h2.section-heading Book Your Appointment
-                #map
+
                 h4.section-heading West Windsor Medical Clinic
                 h6.section-text 1608 Tecumseh Rd W, Windsor, ON N9B 1T8
                 h6.section-text (519) 258-4400
+
                 #vue-instance
                     appointment(v-for='item in inventory', :key='item.id', v-bind:item='item')
                     div(v-if='inventory[0] == null')
                         br
                         |
                         b#noBookings No appointments available!
+
 
 
     script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyC0MxRy96T3Hkl4btgbVrLjWDoWUt4GMug', async='', defer='')

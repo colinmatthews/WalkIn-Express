@@ -208,6 +208,7 @@ function changeDate(){
     socket.emit("closeCursor");
     var date = document.getElementById('datepicker').value;
     var validDate = moment(date).format('YYYYMMDD');
+    today = validDate;
     console.log(date);
     document.getElementById("currentDate").innerHTML = new Date(date).toDateString();
     vm.deleteLocalContent();

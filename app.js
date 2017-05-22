@@ -212,7 +212,7 @@ io.on("connection", function (socket) {
         if(dateIsValid(date)) {
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
-            var validDate = new Date((moment(date).toDate()) + 'UTC');
+            var validDate = moment.utc(date).toDate();
 
             console.log("Today in getInitialPatients");
             r.connect({
@@ -265,7 +265,7 @@ io.on("connection", function (socket) {
         if(dateIsValid(date)) {
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
-            var validDate = new Date((moment(date).toDate()) + 'UTC');
+            var validDate = moment.utc(date).toDate();
 
             r.connect({
                 host: dbConfig.host,
@@ -502,7 +502,8 @@ io.on("connection", function (socket) {
         if(dateIsValid(date)){
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
-            var validDate = new Date((moment(date).toDate()) + 'UTC');
+
+            var validDate = moment.utc(date).toDate();
 
             console.log(validDate);
             r.connect({
@@ -554,8 +555,8 @@ io.on("connection", function (socket) {
         if(dateIsValid(date)){
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
-            var validDate = new Date((moment(date).toDate()) + 'UTC');
-
+            var validDate = moment.utc(date).toDate();
+            console.log(validDate);
             r.connect({
                 host: dbConfig.host,
                 port: dbConfig.port,
@@ -569,18 +570,17 @@ io.on("connection", function (socket) {
                 if (err) connectionError(err);
                 rconnection = conn;
                 // today's appointments that have patients that have not been viewed
-                r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate))
+                r.table(appointments_table).filter({timestamp:validDate})
                     .filter({patient: null}).run(rconnection, function (err, cursor) {
-
-                    if (err) queryError(err);
-                    cursor.toArray(function (err, result) {
-                        if (err) responseError(err);
-                        console.log(result);
-                        socket.emit("initUnbookedAppointmentsSet", result);
+                        if (err) queryError(err);
+                        cursor.toArray(function (err, result) {
+                            if (err) responseError(err);
+                            console.log(result);
+                            socket.emit("initUnbookedAppointmentsSet", result);
+                        });
                     });
-                });
 
-            });
+                });
         }
         else {
             serverError("Error 1D,Invalid date when retrieving today's appointments.",new Error().stack);
@@ -604,7 +604,7 @@ io.on("connection", function (socket) {
         if(dateIsValid(date)){
             // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
             // only other way is to parse date string manually and then create a date object by passing in each value
-            var validDate = new Date((moment(date).toDate()) + 'UTC');
+            var validDate = moment.utc(date).toDate();
 
             r.connect({
                 host: dbConfig.host,
@@ -761,7 +761,7 @@ io.on("connection", function (socket) {
             if(dateIsValid(date)){
                 // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
                 // only other way is to parse date string manually and then create a date object by passing in each value
-                var validDate = new Date((moment(date).toDate()) + 'UTC');
+                var validDate = moment.utc(date).toDate();
 
                 console.log(validDate);
                 r.connect({

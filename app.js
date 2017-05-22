@@ -18,6 +18,20 @@ var moment = require('moment');
 var validator = require('validator');
 var helmet = require('helmet');
 
+// ensure https
+app.use(function (req, res, next) {
+    var sslUrl;
+
+    if (process.env.NODE_ENV === 'production' &&
+        req.headers['x-forwarded-proto'] !== 'https') {
+
+        sslUrl = [domain, req.url].join('');
+        return res.redirect(sslUrl);
+    }
+
+    return next();
+});
+
 var DEBUG;
 
 if (app.get('env') === 'development')
@@ -50,20 +64,6 @@ app.use(helmet());
 app.use(helmet.hsts({
     maxAge: 15552000  // 180 days in seconds
 }));
-
-// ensure https
-app.use(function (req, res, next) {
-    var sslUrl;
-
-    if (process.env.NODE_ENV === 'production' &&
-        req.headers['x-forwarded-proto'] !== 'https') {
-
-        sslUrl = [domain, req.url].join('');
-        return res.redirect(sslUrl);
-    }
-
-    return next();
-});
 
 
 // Change tables based on production or staging
@@ -355,7 +355,7 @@ io.on("connection", function (socket) {
             client.transmissions.send({
                 content: {
                     from: 'no-reply@walkinexpress.ca',
-                    subject: 'Your Appointment Was Confirmed!See your next steps.',
+                    subject: 'Your Appointment Was Confirmed! See your next steps.',
                     html:html
                 },
                 recipients: [

@@ -19,7 +19,7 @@ var validator = require('validator');
 var helmet = require('helmet');
 
 // ensure https
-/*app.use(function (req, res, next) {
+app.use(function (req, res, next) {
     var sslUrl;
 
     if (process.env.NODE_ENV === 'production' &&
@@ -31,7 +31,6 @@ var helmet = require('helmet');
 
     return next();
 });
-*/
 
 var DEBUG;
 

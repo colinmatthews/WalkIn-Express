@@ -719,16 +719,16 @@ io.on("connection", function (socket) {
             rconnection = conn;
             var displayTime;
             if( hour > 12){
-                if( minute == 0){
-                    displayTime = (hour - 12) + ":" + minute + '0'  + " " + period;
+                if( minute<10){
+                    displayTime = (hour - 12) + ":0" + minute   + " " + period;
                 }
                 else{
                     displayTime = (hour - 12) + ":" + minute + " " + period;
                 }
             }
             else{
-                if( minute == 0){
-                    displayTime = hour + ":" + minute + '0' + " " + period;
+                if( minute<10){
+                    displayTime = hour + ":0" + minute  + " " + period;
                 }
                 else{
                     displayTime = hour + ":" + minute + " " + period;

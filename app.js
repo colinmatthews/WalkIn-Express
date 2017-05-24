@@ -392,7 +392,7 @@ io.on("connection", function (socket) {
         fs.readFile(__dirname + '/templates/denyEmail.html', 'utf8', function (err, html) {
             client.transmissions.send({
                 content: {
-                    from: 'testing@walkinexpress.ca',
+                    from: 'no-reply@walkinexpress.ca',
                     subject: 'Your Appointment Was Denied',
                     html: html
                 },

@@ -53,8 +53,14 @@
 <span class="hljs-keyword">var</span> io = <span class="hljs-built_in">require</span>(<span class="hljs-string">'socket.io'</span>)(http);
 <span class="hljs-keyword">var</span> path = <span class="hljs-built_in">require</span>(<span class="hljs-string">'path'</span>);
 <span class="hljs-keyword">var</span> r = <span class="hljs-built_in">require</span>(<span class="hljs-string">'rethinkdb'</span>);
-<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">"fs"</span>)
-<span class="hljs-keyword">var</span> stormpath = <span class="hljs-built_in">require</span>(<span class="hljs-string">'express-stormpath'</span>);</pre></div></div>
+<span class="hljs-keyword">var</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">"fs"</span>);
+<span class="hljs-keyword">var</span> passport = <span class="hljs-built_in">require</span>(<span class="hljs-string">'passport'</span>);
+<span class="hljs-keyword">var</span> Auth0Strategy = <span class="hljs-built_in">require</span>(<span class="hljs-string">'passport-auth0'</span>);
+<span class="hljs-keyword">var</span> bodyParser = <span class="hljs-built_in">require</span>(<span class="hljs-string">'body-parser'</span>);
+<span class="hljs-keyword">var</span> cookieSession = <span class="hljs-built_in">require</span>(<span class="hljs-string">'cookie-session'</span>);
+<span class="hljs-keyword">var</span> moment = <span class="hljs-built_in">require</span>(<span class="hljs-string">'moment'</span>);
+<span class="hljs-keyword">var</span> validator = <span class="hljs-built_in">require</span>(<span class="hljs-string">'validator'</span>);
+<span class="hljs-keyword">var</span> helmet = <span class="hljs-built_in">require</span>(<span class="hljs-string">'helmet'</span>);</pre></div></div>
             
         </li>
         
@@ -65,15 +71,36 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-3">&#182;</a>
               </div>
-              <p>Sparkpost is used for sending emails to the patients</p>
+              <p>ensure https</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> SparkPost = <span class="hljs-built_in">require</span>(<span class="hljs-string">'sparkpost'</span>);
-<span class="hljs-keyword">var</span> client = <span class="hljs-keyword">new</span> SparkPost(<span class="hljs-string">'15756eb2514dee0c0c069401c1f49a99456f790c'</span>);
+            <div class="content"><div class='highlight'><pre>app.use(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">req, res, next</span>) </span>{
+    <span class="hljs-keyword">var</span> sslUrl;
 
+    <span class="hljs-keyword">if</span> (process.env.NODE_ENV === <span class="hljs-string">'production'</span> &amp;&amp;
+        req.headers[<span class="hljs-string">'x-forwarded-proto'</span>] !== <span class="hljs-string">'https'</span>) {
 
-<span class="hljs-keyword">var</span> port = <span class="hljs-number">8000</span>;</pre></div></div>
+        sslUrl = [domain, req.url].join(<span class="hljs-string">''</span>);
+        <span class="hljs-keyword">return</span> res.redirect(sslUrl);
+    }
+
+    <span class="hljs-keyword">return</span> next();
+});
+
+<span class="hljs-keyword">var</span> DEBUG;
+
+<span class="hljs-keyword">if</span> (app.get(<span class="hljs-string">'env'</span>) === <span class="hljs-string">'development'</span>)
+{
+     DEBUG = <span class="hljs-literal">true</span>;
+}
+<span class="hljs-keyword">else</span>{
+     DEBUG = <span class="hljs-literal">false</span>;
+}
+
+<span class="hljs-keyword">var</span> domain;
+<span class="hljs-keyword">var</span> appointments_table;
+<span class="hljs-keyword">var</span> patients_table;</pre></div></div>
             
         </li>
         
@@ -84,20 +111,9 @@
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-4">&#182;</a>
               </div>
-              <p>Stormpath is used for our user authentication</p>
+              <p>Initialize services</p>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre>app.use(stormpath.init(app, {
-    <span class="hljs-attr">website</span>:<span class="hljs-literal">true</span>
-
-}));
-
-app.use(<span class="hljs-string">"/public"</span>, express.static(__dirname + <span class="hljs-string">'/public'</span>));
-
-app.get(<span class="hljs-string">'/'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">req, res</span>) </span>{
-    res.sendFile(__dirname + <span class="hljs-string">'/views/index.html'</span>);
-});</pre></div></div>
             
         </li>
         
@@ -108,13 +124,12 @@ app.get(<span class="hljs-string">'/'</span>, <span class="hljs-function"><span 
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-5">&#182;</a>
               </div>
-              <p>Adding <code>stormpath.loginRequired</code> make this route only accessible to logged in users</p>
+              <p>Sparkpost is used for sending emails to the patients</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>app.get(<span class="hljs-string">'/book'</span>, stormpath.loginRequired, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">req, res</span>) </span>{
-    res.sendFile(__dirname + <span class="hljs-string">'/views/book.html'</span>);
-});</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> SparkPost = <span class="hljs-built_in">require</span>(<span class="hljs-string">'sparkpost'</span>);
+<span class="hljs-keyword">var</span> client = <span class="hljs-keyword">new</span> SparkPost(<span class="hljs-string">'15756eb2514dee0c0c069401c1f49a99456f790c'</span>);</pre></div></div>
             
         </li>
         
@@ -125,29 +140,21 @@ app.get(<span class="hljs-string">'/'</span>, <span class="hljs-function"><span 
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-6">&#182;</a>
               </div>
-              <p><code>groupsRequired[(&#39;clinics)]</code> makes this route only accessible to users who are a part of the clinics group</p>
+              <p>Neverbounce is used to validate the email a patient enters when booking an appointment (1000/month free)</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>app.get(<span class="hljs-string">'/dashboard'</span>,stormpath.groupsRequired([<span class="hljs-string">'clinics'</span>]), <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">req, res</span>) </span>{
-    res.sendFile(__dirname + <span class="hljs-string">'/views/dashboard.html'</span>);
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> NeverBounce = <span class="hljs-built_in">require</span>(<span class="hljs-string">'neverbounce'</span>)({
+    <span class="hljs-attr">apiKey</span>: <span class="hljs-string">'Bp4jC20K'</span>,
+    <span class="hljs-attr">apiSecret</span>: <span class="hljs-string">'Yzu8C125gtbYR4F'</span>
 });
 
-app.get(<span class="hljs-string">'/set'</span>,stormpath.groupsRequired([<span class="hljs-string">'clinics'</span>]), <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">req, res</span>) </span>{
-    res.sendFile(__dirname + <span class="hljs-string">'/views/set.html'</span>);
-});
-
-app.get(<span class="hljs-string">'/dayview'</span>,stormpath.groupsRequired([<span class="hljs-string">'clinics'</span>]), <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">req, res</span>) </span>{
-    res.sendFile(__dirname + <span class="hljs-string">'/views/dayview.html'</span>);
-});
-
-http.listen(port);
+app.use(helmet());
 
 
-
-app.on(<span class="hljs-string">'stormpath.ready'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'Stormpath Ready!'</span>);
-});</pre></div></div>
+app.use(helmet.hsts({
+    <span class="hljs-attr">maxAge</span>: <span class="hljs-number">15552000</span>  <span class="hljs-comment">// 180 days in seconds</span>
+}));</pre></div></div>
             
         </li>
         
@@ -157,6 +164,206 @@ app.on(<span class="hljs-string">'stormpath.ready'</span>, <span class="hljs-fun
               
               <div class="pilwrap ">
                 <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Change tables based on production or staging</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">if</span> (DEBUG){
+     appointments_table = <span class="hljs-string">'appointments_staging'</span>;
+     patients_table = <span class="hljs-string">'patients_staging'</span>;
+     domain = <span class="hljs-string">"https://staging-walkinexpress.herokuapp.com"</span>;
+}
+<span class="hljs-keyword">else</span> {
+    appointments_table = <span class="hljs-string">'appointments'</span>;
+    patients_table = <span class="hljs-string">'patients'</span>;
+    domain = <span class="hljs-string">"https://walkinexpress.ca"</span>;
+}
+
+<span class="hljs-keyword">var</span> routes = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./routes/indexRoutes'</span>);
+<span class="hljs-keyword">var</span> user = <span class="hljs-built_in">require</span>(<span class="hljs-string">'./routes/dashboardRoute'</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>passport and auth0 are used for user auth for clinic login</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">var</span> strategy = <span class="hljs-keyword">new</span> Auth0Strategy({
+    <span class="hljs-attr">domain</span>:       process.env.AUTH0_DOMAIN,
+    <span class="hljs-attr">clientID</span>:     process.env.AUTH0_CLIENT_ID,
+    <span class="hljs-attr">clientSecret</span>: process.env.AUTH0_CLIENT_SECRET,
+    <span class="hljs-attr">callbackURL</span>:  process.env.AUTH0_CALLBACK_URL || <span class="hljs-string">'http://localhost:8000/callback'</span>
+}, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">accessToken, refreshToken, extraParams, profile, done</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>accessToken is the token to call Auth0 API (not needed in the most cases)
+extraParams.id_token has the JSON Web Token
+profile has all the information from the user</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">return</span> done(<span class="hljs-literal">null</span>, profile);
+});
+
+passport.use(strategy);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>This can be used to keep a smaller payload</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>passport.serializeUser(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">user, done</span>) </span>{
+    done(<span class="hljs-literal">null</span>, user);
+});
+
+passport.deserializeUser(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">user, done</span>) </span>{
+    done(<span class="hljs-literal">null</span>, user);
+});
+app.set(<span class="hljs-string">'view engine'</span>, <span class="hljs-string">'pug'</span>);
+app.set(<span class="hljs-string">'views'</span>, path.join(__dirname + <span class="hljs-string">'/views'</span>));
+app.use(<span class="hljs-string">"/public"</span>, express.static(__dirname + <span class="hljs-string">'/public'</span>));</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>App.use lines setup express session</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ <span class="hljs-attr">extended</span>: <span class="hljs-literal">false</span> }));
+app.use(cookieSession({
+    <span class="hljs-attr">name</span>: <span class="hljs-string">'googoogaagah'</span>,
+    <span class="hljs-attr">keys</span>: [<span class="hljs-string">'key1'</span>],
+
+    <span class="hljs-attr">cookie</span>: {
+        <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
+        <span class="hljs-attr">domain</span>: domain, <span class="hljs-comment">//</span>
+        expires: <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span> <span class="hljs-comment">// 24 hours</span>
+    }
+
+
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Setup server</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+app.use(<span class="hljs-string">'/'</span>, routes);
+app.use(<span class="hljs-string">'/dashboard'</span>, user);
+
+app.use(<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">req, res, next</span>)</span>{
+    res.status(<span class="hljs-number">404</span>);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <p>respond with html page</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (req.accepts(<span class="hljs-string">'html'</span>)) {
+        res.render(<span class="hljs-string">'404'</span>, { <span class="hljs-attr">url</span>: req.url });
+        <span class="hljs-keyword">return</span>;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>respond with json</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">if</span> (req.accepts(<span class="hljs-string">'json'</span>)) {
+        res.send({ <span class="hljs-attr">error</span>: <span class="hljs-string">'Not found'</span> });
+        <span class="hljs-keyword">return</span>;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>default to plain-text. send()</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    res.type(<span class="hljs-string">'txt'</span>).send(<span class="hljs-string">'Not found'</span>);
+});
+
+<span class="hljs-keyword">var</span> port = process.env.PORT;
+http.listen(port || <span class="hljs-number">8000</span>, <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"></span>)</span>{
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Express server listening on port %d in %s mode"</span>, <span class="hljs-keyword">this</span>.address().port, app.settings.env);
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-16">&#182;</a>
               </div>
               <h1 id="socket-io-calls">Socket IO Calls</h1>
 <hr>
@@ -170,28 +377,11 @@ so these functions will only be called when particular events occur ( button cli
         </li>
         
         
-        <li id="section-8">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-8">&#182;</a>
-              </div>
-              <p> <code>var today</code> needs to be removed, the date should be passed to our functions from the client to ensure that it is correct</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> today = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().toLocaleString([],{<span class="hljs-attr">month</span>:<span class="hljs-string">'2-digit'</span>,<span class="hljs-attr">day</span>:<span class="hljs-string">'2-digit'</span>,<span class="hljs-attr">year</span>:<span class="hljs-string">'numeric'</span>});
-    today = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(today + <span class="hljs-string">'UTC'</span>);
-    <span class="hljs-built_in">console</span>.log(today);</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-9">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-9">&#182;</a>
+                <a class="pilcrow" href="#section-17">&#182;</a>
               </div>
               <p>rconnection and myCursor are used when connecting to rethinkDB, so that we can access the connection or the cursor
 if we need to.
@@ -202,16 +392,17 @@ created when we run a query with <code>.changes()</code> at the end of it.</p>
             
             <div class="content"><div class='highlight'><pre>    <span class="hljs-keyword">var</span> rconnection = <span class="hljs-literal">null</span>;
     <span class="hljs-keyword">var</span> myCursor = <span class="hljs-literal">null</span>;
+
     <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"You connected!"</span>);</pre></div></div>
             
         </li>
         
         
-        <li id="section-10">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-10">&#182;</a>
+                <a class="pilcrow" href="#section-18">&#182;</a>
               </div>
               <p>caCert is a SSL certificate for connecting to db</p>
 
@@ -233,16 +424,117 @@ created when we run a query with <code>.changes()</code> at the end of it.</p>
         </li>
         
         
-        <li id="section-11">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-11">&#182;</a>
+                <a class="pilcrow" href="#section-19">&#182;</a>
               </div>
               <h3 id="dashboard-js">Dashboard.js</h3>
 <hr>
 <p>The following function calls are called from dashboard.js</p>
-<p> <strong><em>updateAppointmentsDashboard</em></strong></p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-20">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-20">&#182;</a>
+              </div>
+              <p><strong><em>getInitialPatients</em></strong></p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="hljs-comment">/*
+     Called by:
+     dashboard.js
+     Function:
+     gets initial data for appointments that have patients associated with them
+     Purpose:
+     initializes dashboard with bookings
+     Context:
+     called at the beginning of dashboard.js
+     */</span>
+    socket.on(<span class="hljs-string">"getInitialPatients"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{
+        <span class="hljs-keyword">if</span>(dateIsValid(date)) {</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-21">&#182;</a>
+              </div>
+              <p>take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+only other way is to parse date string manually and then create a date object by passing in each value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> validDate = moment.utc(date).toDate();
+
+            <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"Today in getInitialPatients"</span>);
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-22">&#182;</a>
+              </div>
+              <p>today’s appointments that have patients that have not been viewed</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                r.table(appointments_table).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(validDate))).eqJoin
+                (<span class="hljs-string">'patient'</span>, r.table(patients_table)).without({<span class="hljs-string">"right"</span>: {<span class="hljs-string">"id"</span>: <span class="hljs-literal">true</span>}}).zip()
+                    .filter({<span class="hljs-attr">viewed</span>: <span class="hljs-literal">false</span>}).coerceTo(<span class="hljs-string">'array'</span>).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+
+                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                    cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                        <span class="hljs-keyword">if</span> (err) responseError(err);
+                        <span class="hljs-built_in">console</span>.log(result);
+                        socket.emit(<span class="hljs-string">"initRecords"</span>, result);
+
+                    });
+                });
+
+            });
+        }
+        <span class="hljs-keyword">else</span>{
+            serverError(<span class="hljs-string">"Error 1A, Invalid date when retrieving today's appointments."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        }
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-23">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-23">&#182;</a>
+              </div>
+              <p> <strong><em>updateAppointmentsDashboard</em></strong></p>
 <p> <strong>What:</strong>
  Checks appointments table for a change in data for the current date by creating a listener object
 for the appointments table, filtered to today’s date</p>
@@ -254,115 +546,48 @@ the patient field from null to a pk of a patient. Works in conjunction with upda
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"updateAppointmentsDashboard"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-        r.connect({
-            <span class="hljs-attr">host</span>: dbConfig.host,
-            <span class="hljs-attr">port</span>: dbConfig.port,
-            <span class="hljs-attr">user</span>: dbConfig.user,
-            <span class="hljs-attr">password</span>: dbConfig.password,
-            <span class="hljs-attr">db</span>: dbConfig.db,
-            <span class="hljs-attr">ssl</span>: {
-                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-            rconnection = conn;
-            r.db(<span class="hljs-string">'WalkInExpress'</span>).table(<span class="hljs-string">"appointments"</span>).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(today)).changes().run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                cursor.each(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
-                    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                    <span class="hljs-built_in">console</span>.log(result);
-                    socket.emit(<span class="hljs-string">"updateAppointmentsDashboardResults"</span>, result);
+            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"updateAppointmentsDashboard"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{
+        <span class="hljs-keyword">if</span>(dateIsValid(date)) {
+
+            <span class="hljs-keyword">var</span> validDate = moment.utc(date).toDate();
+
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;
+                r.db(<span class="hljs-string">'WalkInExpress'</span>).table(appointments_table).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(validDate))).changes().run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                    cursor.each(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                        <span class="hljs-keyword">if</span> (err)responseError(err);
+                        <span class="hljs-built_in">console</span>.log(result);
+                        socket.emit(<span class="hljs-string">"updateAppointmentsDashboardResults"</span>, result);
+
+
+                    });
                 });
             });
-        });
+        }
+        <span class="hljs-keyword">else</span>{
+            serverError(<span class="hljs-string">"Error 1B,Invalid date when retrieving today's appointments."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        }
     });</pre></div></div>
             
         </li>
         
         
-        <li id="section-12">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-12">&#182;</a>
-              </div>
-              <p> <strong><em>confirmAppointment</em></strong></p>
-<p> <strong>What:</strong>
-  Sends an email to the patient confirming their appointment</p>
-<p> <strong>Why:</strong>
- Allows communication between the patient and the clinic, and give the patient peace of mind their appointment
- has been received.</p>
-<p><strong>When:</strong>
- Called when the “Accept” button on the dashboard is clicked.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>
-
-    socket.on(<span class="hljs-string">'confirmAppointment'</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">userEmail</span>)</span>{
-        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"confirm"</span>);
-
-        client.transmissions.send({
-            <span class="hljs-attr">content</span>: {
-                <span class="hljs-attr">from</span>: <span class="hljs-string">'testing@sparkpostbox.com'</span>,
-                <span class="hljs-attr">subject</span>: <span class="hljs-string">'Your Appointment Was Confirmed!'</span>,
-                <span class="hljs-attr">html</span>:<span class="hljs-string">'&lt;html&gt;&lt;body&gt;'</span> +
-                <span class="hljs-string">'&lt;p&gt; Your appointment has been confirmed!&lt;/p&gt;&lt;br&gt;&lt;p&gt;Thanks for using Walk-In Express!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;'</span>
-            },
-            <span class="hljs-attr">recipients</span>: [
-                {<span class="hljs-attr">address</span>: userEmail}
-            ]
-        });
-
-    });</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-13">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-13">&#182;</a>
-              </div>
-              <p> <strong><em>denyAppointment</em></strong></p>
-<p> <strong>What:</strong>
-  Sends an email to the patient denying their appointment</p>
-<p> <strong>Why:</strong>
- Allows communication between the patient and the clinic. Their appointment was likely denied due to the information
- they entered was false.</p>
-<p><strong>When:</strong>
- Called when the “Decline” button on the dashboard is clicked.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>
-    socket.on(<span class="hljs-string">'denyAppointment'</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">userEmail</span>)</span>{
-        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"deny"</span>);
-
-        client.transmissions.send({
-            <span class="hljs-attr">content</span>: {
-                <span class="hljs-attr">from</span>: <span class="hljs-string">'testing@sparkpostbox.com'</span>,
-                <span class="hljs-attr">subject</span>: <span class="hljs-string">'Your Appointment Was Denied'</span>,
-                <span class="hljs-attr">html</span>:<span class="hljs-string">'&lt;html&gt;&lt;body&gt;'</span> +
-                <span class="hljs-string">'&lt;p&gt; There was a problem with your information when trying to book an appointment. Please visit the clinic to seek care while we try to sort this out!&lt;/p&gt;&lt;br&gt;&lt;p&gt;Thanks for using Walk-In Express!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;'</span>
-            },
-            <span class="hljs-attr">recipients</span>: [
-                {<span class="hljs-attr">address</span>: userEmail}
-            ]
-        });
-
-    });</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-14">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-14">&#182;</a>
+                <a class="pilcrow" href="#section-24">&#182;</a>
               </div>
               <p> <strong><em>getPatient</em></strong></p>
 <p> <strong>What:</strong>
@@ -377,38 +602,121 @@ to get the patients information</p>
             
             <div class="content"><div class='highlight'><pre>
     socket.on(<span class="hljs-string">"getPatient"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">patientID</span>) </span>{
-        r.connect({
-            <span class="hljs-attr">host</span>: dbConfig.host,
-            <span class="hljs-attr">port</span>: dbConfig.port,
-            <span class="hljs-attr">user</span>: dbConfig.user,
-            <span class="hljs-attr">password</span>: dbConfig.password,
-            <span class="hljs-attr">db</span>: dbConfig.db,
-            <span class="hljs-attr">ssl</span>: {
-                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-            rconnection = conn;
-            r.table(<span class="hljs-string">'patients'</span>).filter({<span class="hljs-attr">id</span>: patientID}).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
-                    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                    <span class="hljs-built_in">console</span>.log(result);
-                    socket.emit(<span class="hljs-string">"newAppointmentPatientData"</span>, result);
 
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;
+                r.table(patients_table).filter({<span class="hljs-attr">id</span>: patientID}).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                    cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                        <span class="hljs-keyword">if</span> (err) responseError(err);
+                        <span class="hljs-built_in">console</span>.log(result);
+                        socket.emit(<span class="hljs-string">"newAppointmentPatientData"</span>, result);
+
+                    });
                 });
             });
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-25">&#182;</a>
+              </div>
+              <p> <strong><em>confirmAppointment</em></strong></p>
+<p> <strong>What:</strong>
+  Sends an email to the patient confirming their appointment</p>
+<p> <strong>Why:</strong>
+ Allows communication between the patient and the clinic, and give the patient peace of mind their appointment
+ has been received.</p>
+<p><strong>When:</strong>
+ Called when the “Accept” button on the dashboard is clicked.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+    socket.on(<span class="hljs-string">'confirmAppointment'</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">userEmail,err</span>) </span>{
+        <span class="hljs-keyword">if</span> (err) serverError(<span class="hljs-string">"Cannot confirm appointment."</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"confirm"</span>);
+
+        fs.readFile(__dirname + <span class="hljs-string">'/templates/acceptEmail.html'</span>, <span class="hljs-string">'utf8'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, html</span>) </span>{
+            client.transmissions.send({
+                <span class="hljs-attr">content</span>: {
+                    <span class="hljs-attr">from</span>: <span class="hljs-string">'no-reply@walkinexpress.ca'</span>,
+                    <span class="hljs-attr">subject</span>: <span class="hljs-string">'Your Appointment Was Confirmed! See your next steps.'</span>,
+                    <span class="hljs-attr">html</span>:html
+                },
+                <span class="hljs-attr">recipients</span>: [
+                    {<span class="hljs-attr">address</span>: userEmail}
+                ]
+            });
+
         });
     });</pre></div></div>
             
         </li>
         
         
-        <li id="section-15">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-15">&#182;</a>
+                <a class="pilcrow" href="#section-26">&#182;</a>
+              </div>
+              <p> <strong><em>denyAppointment</em></strong></p>
+<p> <strong>What:</strong>
+  Sends an email to the patient denying their appointment</p>
+<p> <strong>Why:</strong>
+ Allows communication between the patient and the clinic. Their appointment was likely denied due to the information
+ they entered was false.</p>
+<p><strong>When:</strong>
+ Called when the “Decline” button on the dashboard is clicked.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    socket.on(<span class="hljs-string">'denyAppointment'</span>,<span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">userEmail, err</span>)</span>{
+        <span class="hljs-keyword">if</span>(err)<span class="hljs-keyword">throw</span> serverError(<span class="hljs-string">"Cannot deny appointment"</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"deny"</span>);
+        <span class="hljs-built_in">console</span>.log(userEmail);
+
+        fs.readFile(__dirname + <span class="hljs-string">'/templates/denyEmail.html'</span>, <span class="hljs-string">'utf8'</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, html</span>) </span>{
+            client.transmissions.send({
+                <span class="hljs-attr">content</span>: {
+                    <span class="hljs-attr">from</span>: <span class="hljs-string">'no-reply@walkinexpress.ca'</span>,
+                    <span class="hljs-attr">subject</span>: <span class="hljs-string">'Your Appointment Was Denied'</span>,
+                    <span class="hljs-attr">html</span>: html
+                },
+                <span class="hljs-attr">recipients</span>: [
+                    {<span class="hljs-attr">address</span>: userEmail}
+                ]
+            });
+        });
+
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-27">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-27">&#182;</a>
               </div>
               <p> <strong><em>setViewed</em></strong></p>
 <p> <strong>What:</strong>
@@ -422,301 +730,48 @@ to get the patients information</p>
             
             <div class="content"><div class='highlight'><pre>
     socket.on(<span class="hljs-string">"setViewed"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">appointmentID</span>) </span>{
-        r.connect({
-            <span class="hljs-attr">host</span>: dbConfig.host,
-            <span class="hljs-attr">port</span>: dbConfig.port,
-            <span class="hljs-attr">user</span>: dbConfig.user,
-            <span class="hljs-attr">password</span>: dbConfig.password,
-            <span class="hljs-attr">db</span>: dbConfig.db,
-            <span class="hljs-attr">ssl</span>: {
-                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-            rconnection = conn;
-            r.table(<span class="hljs-string">'appointments'</span>).get(appointmentID).update({<span class="hljs-attr">viewed</span>: <span class="hljs-literal">true</span>}).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"UPDATE APPOINTMENT VIEWED "</span> + cursor);
+
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;
+                r.table(appointments_table).get(appointmentID).update({<span class="hljs-attr">viewed</span>: <span class="hljs-literal">true</span>}).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"UPDATE APPOINTMENT VIEWED "</span> + cursor);
+                });
             });
-        });
+
     });</pre></div></div>
             
         </li>
         
         
-        <li id="section-16">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-16">&#182;</a>
+                <a class="pilcrow" href="#section-28">&#182;</a>
               </div>
-              <p><strong><em>getInitialPatients</em></strong></p>
-<p>This function has been replaced by getDateAppointments, as it is redundant.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>    <span class="hljs-comment">/*
-     Called by:
-            dashboard.js
-     Function:
-            gets initial data for appointments that have patients associated with them
-     Purpose:
-            initializes dashboard with bookings
-     Context:
-            called at the beginning of dashboard.js
-     */</span>
-    <span class="hljs-comment">/*socket.on("getInitialPatients", function () {
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) throw err;
-            rconnection = conn;
-</span></pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-17">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-17">&#182;</a>
-              </div>
-              <p>today’s appointments that have patients that have not been viewed</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>            r.table('appointments').filter(r.row('timestamp').date().eq(today)).eqJoin
-                ('patient', r.table('patients')).without({"right": {"id": true}}).zip()
-                .filter({viewed: false}).coerceTo('array').run(rconnection, function (err, cursor) {
-
-                if (err) throw err;
-                cursor.toArray(function (err, result) {
-                    if (err) throw err;
-                    console.log(result);
-                    socket.emit("initRecords", result);
-                });
-            });
-
-        });
-    });
-    */</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-18">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-18">&#182;</a>
-              </div>
-              <hr>
-<pre><code>     set.js
-</code></pre><hr>
+              <p> <strong><em>remakeAppointmentSlot</em></strong></p>
+<p> <strong>What:</strong>
+  Recreates an appointment that will be soon deleted</p>
+<p> <strong>Why:</strong>
+ After the clinic denies an appointment, this method is called to recreate the denied appointment</p>
+<p><strong>When:</strong>
+ On deny appointment</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
-
-    <span class="hljs-comment">/*
-     Called From:
-            set.js
-     Function:
-            Joins patient and appointment data for all appointments that have patients
-     Purpose:
-            Used to initialize set with booked appointments
-     Context:
-           Called at the beginning of the file
-
-
-     */</span>
-    socket.on(<span class="hljs-string">"initAppointmentsSet"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{
-        r.connect({
-            <span class="hljs-attr">host</span>: dbConfig.host,
-            <span class="hljs-attr">port</span>: dbConfig.port,
-            <span class="hljs-attr">user</span>: dbConfig.user,
-            <span class="hljs-attr">password</span>: dbConfig.password,
-            <span class="hljs-attr">db</span>: dbConfig.db,
-            <span class="hljs-attr">ssl</span>: {
-                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-            rconnection = conn;</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-19">
-            <div class="annotation">
-              
-              <div class="pilwrap ">
-                <a class="pilcrow" href="#section-19">&#182;</a>
-              </div>
-              <p>today’s appointments that have patients that have not been viewed</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre>            r.table(<span class="hljs-string">'appointments'</span>).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(date+<span class="hljs-string">"UTC"</span>))).eqJoin
-            (<span class="hljs-string">'patient'</span>, r.table(<span class="hljs-string">'patients'</span>)).without({<span class="hljs-string">"right"</span>: {<span class="hljs-string">"id"</span>: <span class="hljs-literal">true</span>}}).zip()
-                .coerceTo(<span class="hljs-string">'array'</span>).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
-                    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                    <span class="hljs-built_in">console</span>.log(result);
-                    socket.emit(<span class="hljs-string">"initRecordsSet"</span>, result);
-                });
-            });
-
-        });
-    });
-
-
-    <span class="hljs-comment">/*
-     Called From:
-            set.js
-     Function:
-             Checks appointments table for a change in data for the current date
-     Purpose:
-            Used to check if any appointment data has changed,specifically looks for changes in
-            the patient field from null to a pk of a patient. Works in conjunction with updateRecordsResults.
-     Context:
-            Called after getInitialPatients is called.
-     */</span>
-    socket.on(<span class="hljs-string">"updateRecordsSet"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{
-        <span class="hljs-keyword">var</span> checkDate = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(date +<span class="hljs-string">'UTC'</span>);
-        <span class="hljs-built_in">console</span>.log(checkDate);
-
-        r.connect({
-            <span class="hljs-attr">host</span>: dbConfig.host,
-            <span class="hljs-attr">port</span>: dbConfig.port,
-            <span class="hljs-attr">user</span>: dbConfig.user,
-            <span class="hljs-attr">password</span>: dbConfig.password,
-            <span class="hljs-attr">db</span>: dbConfig.db,
-            <span class="hljs-attr">ssl</span>: {
-                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-            rconnection = conn;
-            r.db(<span class="hljs-string">'WalkInExpress'</span>).table(<span class="hljs-string">"appointments"</span>).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(checkDate)).changes().run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'here'</span>);
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                myCursor=cursor;
-                myCursor.each(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
-                    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">" ***** "</span> + result);
-                    socket.emit(<span class="hljs-string">"updateRecordsResultsSet"</span>, result);
-
-                });
-            });
-        });
-    });
-
-    <span class="hljs-comment">/*
-    Called by:
-            set.js
-    Function:
-            Closes the current cursor
-    Purpose:
-            Used to close the changes query when changing dates, so that there is only ever one changefeed at a time
-            and that changefeed is set to the date the user is current working with
-
-     */</span>
-    socket.on(<span class="hljs-string">"closeCursor"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
-       <span class="hljs-built_in">console</span>.log(myCursor.close());
-    });
-
-
-    <span class="hljs-comment">/*
-     Called by:
-            set.js
-     Function:
-           Gets all the appointments on a specific date
-     Purpose:
-            Used to get all appointments that do not have patients booked
-     Context:
-            Called after initAppointmentsSet
-
-     */</span>
-    socket.on(<span class="hljs-string">"getDateAppointments"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{
-
-        <span class="hljs-keyword">var</span> checkDate = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(date +<span class="hljs-string">'UTC'</span>);
-        <span class="hljs-built_in">console</span>.log(checkDate);
-        r.connect({
-            <span class="hljs-attr">host</span>: dbConfig.host,
-            <span class="hljs-attr">port</span>: dbConfig.port,
-            <span class="hljs-attr">user</span>: dbConfig.user,
-            <span class="hljs-attr">password</span>: dbConfig.password,
-            <span class="hljs-attr">db</span>: dbConfig.db,
-            <span class="hljs-attr">ssl</span>: {
-                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-            rconnection = conn;
-            r.table(<span class="hljs-string">'appointments'</span>).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(checkDate)).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
-                    <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                    <span class="hljs-built_in">console</span>.log(result);
-                    socket.emit(<span class="hljs-string">"initRecordsAppointments"</span>, result);
-                });
-            });
-
-        });
-    });
-
-
-
-    <span class="hljs-comment">/*
-    Called by:
-            set.js
-    Function:
-            deletes an appointment by pk
-    Purpose:
-            delete an existing appointment
-    Context:
-            can be called at any time by the user, part of the appointment template
-     */</span>
-    socket.on(<span class="hljs-string">"deleteAppointment"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">appointmentID</span>) </span>{
-        r.connect({
-            <span class="hljs-attr">host</span>: dbConfig.host,
-            <span class="hljs-attr">port</span>: dbConfig.port,
-            <span class="hljs-attr">user</span>: dbConfig.user,
-            <span class="hljs-attr">password</span>: dbConfig.password,
-            <span class="hljs-attr">db</span>: dbConfig.db,
-            <span class="hljs-attr">ssl</span>: {
-                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
-            }
-        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-            rconnection = conn;
-            r.table(<span class="hljs-string">'appointments'</span>).get(appointmentID).delete().run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"DELETE APPOINTMENT DATA "</span> + cursor);
-            });
-        });
-    });
-
-    <span class="hljs-comment">/*
-    Called by:
-            set.js
-    Function:
-            creates a new appointment record
-    Purpose:
-            allows a user to create a new appointment time
-     */</span>
-    socket.on(<span class="hljs-string">"newAppointmentSlot"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">appointmentTime,date</span>) </span>{
+    socket.on(<span class="hljs-string">"remakeAppointmentSlot"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">time,date,displayTime</span>) </span>{
         <span class="hljs-built_in">console</span>.log(date);
         r.connect({
             <span class="hljs-attr">host</span>: dbConfig.host,
@@ -728,31 +783,17 @@ to get the patients information</p>
                 <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
             }
         }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
+            <span class="hljs-keyword">if</span> (err) connectionError(err);
             rconnection = conn;
-            <span class="hljs-keyword">var</span> displayTime;
 
-            <span class="hljs-keyword">if</span> (appointmentTime == <span class="hljs-number">12</span>) {
-                displayTime = appointmentTime + <span class="hljs-string">"PM"</span>;
-            }
-            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (appointmentTime == <span class="hljs-number">24</span>) {
-                displayTime = appointmentTime - <span class="hljs-number">12</span> + <span class="hljs-string">"AM"</span>;
-            }
-            <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (appointmentTime &gt;= <span class="hljs-number">13</span>) {
-                displayTime = appointmentTime - <span class="hljs-number">12</span> + <span class="hljs-string">"PM"</span>;
-            }
-
-            <span class="hljs-keyword">else</span> {
-                displayTime = appointmentTime + <span class="hljs-string">"AM"</span>;
-            }
-            r.table(<span class="hljs-string">'appointments'</span>).insert({
+            r.table(appointments_table).insert({
                 <span class="hljs-string">"patient"</span>: <span class="hljs-literal">null</span>,
-                <span class="hljs-string">"time"</span>: appointmentTime,
+                <span class="hljs-string">"time"</span>: time,
                 <span class="hljs-string">"viewed"</span>: <span class="hljs-literal">false</span>,
                 <span class="hljs-string">"displayTime"</span>: displayTime,
-                <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(date+<span class="hljs-string">"UTC"</span>),
+                <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(date+<span class="hljs-string">"UTC"</span>)
             }).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
+                <span class="hljs-keyword">if</span> (err) queryError(err);
                 <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"NEW APPOINTMENT MADE "</span> + cursor);
             });
         });
@@ -762,32 +803,383 @@ to get the patients information</p>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="pilwrap ">
-                <a class="pilcrow" href="#section-20">&#182;</a>
+                <a class="pilcrow" href="#section-29">&#182;</a>
               </div>
-              <hr>
-<pre><code>     book.js
-</code></pre><hr>
+              <h3 id="set-js">Set.js</h3>
+<hr>
+<p>The following function calls are called from set.js</p>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-30">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-30">&#182;</a>
+              </div>
+              <p> <strong><em>getBookedAppointments</em></strong></p>
+<p> <strong>What:</strong>
+  Returns all of the booked appointments for a given date</p>
+<p> <strong>Why:</strong>
+ Populate booked appointments on the schedule page</p>
+<p><strong>When:</strong>
+ On the schedule page load</p>
 
             </div>
             
             <div class="content"><div class='highlight'><pre>
 
-    <span class="hljs-comment">/*
-    Called by:
-            book.js
-    Function:
-            Creates a new patient record
-    Purpose:
-            Create a new patient record, which will then be assigned to an appointment
-    Context:
-        Called after a user submits the form to book a specific appointment
-     */</span>
+    socket.on(<span class="hljs-string">"getBookedAppointments"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-31">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-31">&#182;</a>
+              </div>
+              <p>date format is : yyyymmdd , string</p>
 
-    socket.on(<span class="hljs-string">"createPatient"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span>(dateIsValid(date)){</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-32">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-32">&#182;</a>
+              </div>
+              <p>take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+only other way is to parse date string manually and then create a date object by passing in each value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+            <span class="hljs-keyword">var</span> validDate = moment.utc(date).toDate();
+
+            <span class="hljs-built_in">console</span>.log(validDate);
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-33">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-33">&#182;</a>
+              </div>
+              <p>today’s appointments that have patients that have not been viewed</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                r.table(appointments_table).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(validDate)).eqJoin
+                (<span class="hljs-string">'patient'</span>, r.table(patients_table)).without({<span class="hljs-string">"right"</span>: {<span class="hljs-string">"id"</span>: <span class="hljs-literal">true</span>}}).zip()
+                    .coerceTo(<span class="hljs-string">'array'</span>).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+
+                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                    cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                        <span class="hljs-keyword">if</span> (err) responseError(err);
+                        <span class="hljs-built_in">console</span>.log(result);
+                        socket.emit(<span class="hljs-string">"initBookedAppointmentsSet"</span>, result);
+                    });
+                });
+
+            });
+        }
+        <span class="hljs-keyword">else</span> {
+            serverError(<span class="hljs-string">"Error 1C,Invalid date when retrieving today's appointments."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        }
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-34">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-34">&#182;</a>
+              </div>
+              <p> <strong><em>getUnbookedAppointments</em></strong></p>
+<p> <strong>What:</strong>
+  Returns all of the unbooked appointments for a given date</p>
+<p> <strong>Why:</strong>
+ Populate unbooked appointments on the schedule page</p>
+<p><strong>When:</strong>
+ After booked appointments are initialized</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    socket.on(<span class="hljs-string">"getUnbookedAppointments"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-35">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-35">&#182;</a>
+              </div>
+              <p>date format is : yyyymmdd , string</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span>(dateIsValid(date)){</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-36">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-36">&#182;</a>
+              </div>
+              <p>take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+only other way is to parse date string manually and then create a date object by passing in each value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> validDate = moment.utc(date).toDate();
+            <span class="hljs-built_in">console</span>.log(validDate);
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-37">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-37">&#182;</a>
+              </div>
+              <p>today’s appointments that have patients that have not been viewed</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                r.table(appointments_table).filter({<span class="hljs-attr">timestamp</span>:validDate})
+                    .filter({<span class="hljs-attr">patient</span>: <span class="hljs-literal">null</span>}).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                        <span class="hljs-keyword">if</span> (err) queryError(err);
+                        cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                            <span class="hljs-keyword">if</span> (err) responseError(err);
+                            <span class="hljs-built_in">console</span>.log(result);
+                            socket.emit(<span class="hljs-string">"initUnbookedAppointmentsSet"</span>, result);
+                        });
+                    });
+
+                });
+        }
+        <span class="hljs-keyword">else</span> {
+            serverError(<span class="hljs-string">"Error 1D,Invalid date when retrieving today's appointments."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        }
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-38">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-38">&#182;</a>
+              </div>
+              <p> <strong><em>updateRecordsSet</em></strong></p>
+<p> <strong>What:</strong>
+  Creates an event listener for changes in today’s appointments</p>
+<p> <strong>Why:</strong>
+ To add /remove appointments from the front end</p>
+<p><strong>When:</strong>
+ After unbooked appointments are added to the schedule</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"updateRecordsSet"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-39">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-39">&#182;</a>
+              </div>
+              <p>date format is : yyyymmdd , string</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">if</span>(dateIsValid(date)){</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-40">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-40">&#182;</a>
+              </div>
+              <p>take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+only other way is to parse date string manually and then create a date object by passing in each value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">var</span> validDate = moment.utc(date).toDate();
+
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;
+                r.db(<span class="hljs-string">'WalkInExpress'</span>).table(appointments_table).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(validDate)).changes().run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">'here'</span>);
+                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                    myCursor=cursor;
+                    myCursor.each(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                        <span class="hljs-keyword">if</span> (err) responseError(err);
+                        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">" ***** "</span> + result);
+                        socket.emit(<span class="hljs-string">"updateRecordsResultsSet"</span>, result);
+
+
+                    });
+                });
+            });
+        }
+
+        <span class="hljs-keyword">else</span> {
+            serverError(<span class="hljs-string">"Error 1E,Invalid date when retrieving today's appointments."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        }
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-41">&#182;</a>
+              </div>
+              <p>/  <strong><em>closeCursor</em></strong></p>
+<p> <strong>What:</strong>
+  Closes the current rethinkdb cursor ( event listener object)</p>
+<p> <strong>Why:</strong>
+ To maintain only one event listener ever being active at any given time</p>
+<p><strong>When:</strong>
+ On date change</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"closeCursor"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) </span>{
+       <span class="hljs-built_in">console</span>.log(myCursor.close());
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-42">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-42">&#182;</a>
+              </div>
+              <p> <strong><em>deleteAppointment</em></strong></p>
+<p> <strong>What:</strong>
+  Deletes an appointment</p>
+<p> <strong>Why:</strong>
+ Clinic wants to delete appointment, or denies appointment</p>
+<p><strong>When:</strong>
+ On delete button</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"deleteAppointment"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">appointmentID</span>) </span>{
+
+            r.connect({
+                <span class="hljs-attr">host</span>: dbConfig.host,
+                <span class="hljs-attr">port</span>: dbConfig.port,
+                <span class="hljs-attr">user</span>: dbConfig.user,
+                <span class="hljs-attr">password</span>: dbConfig.password,
+                <span class="hljs-attr">db</span>: dbConfig.db,
+                <span class="hljs-attr">ssl</span>: {
+                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                }
+            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                rconnection = conn;
+                r.table(appointments_table).get(appointmentID).delete().run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"DELETE APPOINTMENT DATA "</span> + cursor);
+                });
+            });
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-43">&#182;</a>
+              </div>
+              <p> <strong><em>newAppointmentSlot</em></strong></p>
+<p> <strong>What:</strong>
+  Creates a new appointment slot</p>
+<p> <strong>Why:</strong>
+ To make appointment slots available for booking</p>
+<p> <strong>When:</strong>
+ After the clinic clicks “ Add new appointment” and confirms an appointment time</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"newAppointmentSlot"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">hour,minute,date,period</span>) </span>{
+        <span class="hljs-built_in">console</span>.log(date);
         r.connect({
             <span class="hljs-attr">host</span>: dbConfig.host,
             <span class="hljs-attr">port</span>: dbConfig.port,
@@ -798,39 +1190,253 @@ to get the patients information</p>
                 <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
             }
         }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
+            <span class="hljs-keyword">if</span> (err) connectionError(err);
             rconnection = conn;
-            r.table(<span class="hljs-string">'patients'</span>).insert({
-                <span class="hljs-string">"DOB"</span>: data.DOB,
-                <span class="hljs-string">"address"</span>: data.address,
-                <span class="hljs-string">"doctor_id"</span>: data.doctor_id,
-                <span class="hljs-string">"name"</span>: data.name,
-                <span class="hljs-string">"phone"</span>: data.phone
-            }).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
-                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"NEW PATIENT MADE "</span>);
-                <span class="hljs-keyword">var</span> id = cursor.generated_keys[<span class="hljs-number">0</span>];
-                socket.emit(<span class="hljs-string">"newPatientID"</span>, id);
-                <span class="hljs-built_in">console</span>.log(id);
+            <span class="hljs-keyword">var</span> displayTime;
+            <span class="hljs-keyword">if</span>( hour &gt; <span class="hljs-number">12</span>){
+                <span class="hljs-keyword">if</span>( minute&lt;<span class="hljs-number">10</span>){
+                    displayTime = (hour - <span class="hljs-number">12</span>) + <span class="hljs-string">":0"</span> + minute   + <span class="hljs-string">" "</span> + period;
+                }
+                <span class="hljs-keyword">else</span>{
+                    displayTime = (hour - <span class="hljs-number">12</span>) + <span class="hljs-string">":"</span> + minute + <span class="hljs-string">" "</span> + period;
+                }
+            }
+            <span class="hljs-keyword">else</span>{
+                <span class="hljs-keyword">if</span>( minute&lt;<span class="hljs-number">10</span>){
+                    displayTime = hour + <span class="hljs-string">":0"</span> + minute  + <span class="hljs-string">" "</span> + period;
+                }
+                <span class="hljs-keyword">else</span>{
+                    displayTime = hour + <span class="hljs-string">":"</span> + minute + <span class="hljs-string">" "</span> + period;
+                }
 
+            }
+
+            r.table(appointments_table).insert({
+                <span class="hljs-string">"patient"</span>: <span class="hljs-literal">null</span>,
+                <span class="hljs-string">"time"</span>: hour + (minute/<span class="hljs-number">60</span>),
+                <span class="hljs-string">"viewed"</span>: <span class="hljs-literal">false</span>,
+                <span class="hljs-string">"displayTime"</span>: displayTime,
+                <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>(date+<span class="hljs-string">"UTC"</span>)
+            }).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) queryError(err);
+                <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"NEW APPOINTMENT MADE "</span> + cursor);
             });
         });
 
-    });
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-44">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-44">&#182;</a>
+              </div>
+              <p> <strong><em>getDateAppointments</em></strong></p>
+<p> <strong>What:</strong>
+  Get all the unbooked appointments for given date</p>
+<p> <strong>Why:</strong>
+ Populate unbooked appointments for booking page</p>
+<p> <strong>When:</strong>
+ On page load</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"getDateAppointments"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">date</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-45">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-45">&#182;</a>
+              </div>
+              <p>date format is : yyyymmdd , string</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>            <span class="hljs-keyword">if</span>(dateIsValid(date)){</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-46">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-46">&#182;</a>
+              </div>
+              <p>take date string, turn it into a moment object, convert it to a javascript date and make it UTC
+only other way is to parse date string manually and then create a date object by passing in each value</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-keyword">var</span> validDate = moment.utc(date).toDate();
+
+                <span class="hljs-built_in">console</span>.log(validDate);
+                r.connect({
+                    <span class="hljs-attr">host</span>: dbConfig.host,
+                    <span class="hljs-attr">port</span>: dbConfig.port,
+                    <span class="hljs-attr">user</span>: dbConfig.user,
+                    <span class="hljs-attr">password</span>: dbConfig.password,
+                    <span class="hljs-attr">db</span>: dbConfig.db,
+                    <span class="hljs-attr">ssl</span>: {
+                        <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                    }
+                }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                    <span class="hljs-keyword">if</span> (err) connectionError(err);
+                    rconnection = conn;
+                    r.table(appointments_table).filter(r.row(<span class="hljs-string">'timestamp'</span>).date().eq(validDate)).filter({<span class="hljs-attr">patient</span>: <span class="hljs-literal">null</span>}).orderBy(<span class="hljs-string">'time'</span>).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                        <span class="hljs-keyword">if</span> (err) queryError(err);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-47">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-47">&#182;</a>
+              </div>
+              <p>implement next(err);
+and error handling</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                        cursor.toArray(<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                            <span class="hljs-keyword">if</span> (err) responseError(err);
+                            <span class="hljs-built_in">console</span>.log(result);
+                            socket.emit(<span class="hljs-string">"initRecordsAppointments"</span>, result);
+                        });
+                    });
+
+                });
+
+            }
+            <span class="hljs-keyword">else</span> {
+                serverError(<span class="hljs-string">"Error 1F,Invalid date when retrieving today's appointments."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+            }
+
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-48">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-48">&#182;</a>
+              </div>
+              <p> <strong><em>createPatient</em></strong></p>
+<p> <strong>What:</strong>
+ Create a new patient</p>
+<p> <strong>Why:</strong>
+ Creates a new patient object to be later assigned to the appointment</p>
+<p> <strong>When:</strong>
+ After filling out booking form, and clicking “Book!”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    socket.on(<span class="hljs-string">"createPatient"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">data</span>) </span>{
 
 
-    <span class="hljs-comment">/*
-    Called by:
-            book.js
-    Function:
-            assigns an appointment to a specific patient by pk of each
-    Purpose:
-            connects the patient to the appointment they booked
-    Context:
-            called after a new patient is created
+        <span class="hljs-keyword">var</span> dob = data.DOB;
+        <span class="hljs-keyword">var</span> address = data.address;
+        <span class="hljs-keyword">var</span> name = data.name;
+        <span class="hljs-keyword">var</span> phone = data.phone;
+        <span class="hljs-keyword">var</span> email = data.email;
 
-     */</span>
-    socket.on(<span class="hljs-string">"assignAppointment"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">patientID, appointmentID</span>) </span>{
+        <span class="hljs-keyword">if</span>(dateIsValid(dob)) {
+
+            <span class="hljs-keyword">if</span>(!validator.isEmpty(address)){
+
+                <span class="hljs-keyword">if</span>(!validator.isEmpty(name)){
+
+                    <span class="hljs-keyword">if</span>(validator.isNumeric(phone)){
+
+                        <span class="hljs-keyword">if</span> (validator.isEmail(email)) {
+
+                            r.connect({
+                                <span class="hljs-attr">host</span>: dbConfig.host,
+                                <span class="hljs-attr">port</span>: dbConfig.port,
+                                <span class="hljs-attr">user</span>: dbConfig.user,
+                                <span class="hljs-attr">password</span>: dbConfig.password,
+                                <span class="hljs-attr">db</span>: dbConfig.db,
+                                <span class="hljs-attr">ssl</span>: {
+                                    <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+                                }
+                            }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+                                <span class="hljs-keyword">if</span> (err) connectionError(err);
+                                rconnection = conn;
+                                r.table(patients_table).insert({
+                                    <span class="hljs-string">"DOB"</span>: data.DOB,
+                                    <span class="hljs-string">"address"</span>: data.address,
+                                    <span class="hljs-string">"doctor_id"</span>: data.doctor_id,
+                                    <span class="hljs-string">"name"</span>: data.name,
+                                    <span class="hljs-string">"phone"</span>: data.phone,
+                                    <span class="hljs-string">"email"</span>: data.email
+                                }).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                                    <span class="hljs-keyword">if</span> (err) queryError(err);
+                                    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"NEW PATIENT MADE "</span>);
+                                    <span class="hljs-keyword">var</span> id = cursor.generated_keys[<span class="hljs-number">0</span>];
+                                    socket.emit(<span class="hljs-string">"newPatientID"</span>, id);
+                                    <span class="hljs-built_in">console</span>.log(id);
+
+                                });
+                            });
+                        }
+                        <span class="hljs-keyword">else</span>{
+                            serverError(<span class="hljs-string">"Invalid email."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+                        }
+                    }
+                    <span class="hljs-keyword">else</span>{
+                        serverError(<span class="hljs-string">"Invalid phone."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+                    }
+
+                }
+                <span class="hljs-keyword">else</span>{
+                    serverError(<span class="hljs-string">"Invalid name."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+                }
+
+            }
+            <span class="hljs-keyword">else</span>{
+                serverError(<span class="hljs-string">"Invalid address."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+            }
+
+
+        }
+        <span class="hljs-keyword">else</span>{
+            serverError(<span class="hljs-string">"Invalid Date of Birth."</span>,<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+        }
+
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-49">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-49">&#182;</a>
+              </div>
+              <p> <strong><em>assignAppointment</em></strong></p>
+<p> <strong>What:</strong>
+  Assign patient to appointments ‘patient’ field by id</p>
+<p> <strong>Why:</strong>
+ To book an appointment</p>
+<p> <strong>When:</strong>
+ After a new patient is created from filling out the booking form</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    socket.on(<span class="hljs-string">"assignAppointment"</span>, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">patientID, appointmentID</span>) </span>{
         r.connect({
             <span class="hljs-attr">host</span>: dbConfig.host,
             <span class="hljs-attr">port</span>: dbConfig.port,
@@ -841,22 +1447,170 @@ to get the patients information</p>
                 <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
             }
         }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
-            <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
+            <span class="hljs-keyword">if</span> (err) connectionError(err);
             rconnection = conn;
-            r.table(<span class="hljs-string">'appointments'</span>).get(appointmentID).update({<span class="hljs-attr">patient</span>: patientID}).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
-                <span class="hljs-keyword">if</span> (err) <span class="hljs-keyword">throw</span> err;
+            r.table(appointments_table).get(appointmentID).update({<span class="hljs-attr">patient</span>: patientID}).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, cursor</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) queryError(err);
                 <span class="hljs-built_in">console</span>.log(<span class="hljs-string">"UPDATE APPOINTMENT VIEWED "</span> + cursor);
             });
         });
 
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-50">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-50">&#182;</a>
+              </div>
+              <p> <strong><em>checkAvailability</em></strong></p>
+<p> <strong>What:</strong>
+  Checks to see if an appointment has a patient assigned to it</p>
+<p> <strong>Why:</strong>
+ When booking appointments, this check ensures that two patients cant book the same appointment</p>
+<p> <strong>When:</strong>
+ After the form data from the book page is validated</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    socket.on(<span class="hljs-string">"checkAvailability"</span>,<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">appointmentID</span>) </span>{
+        r.connect({
+            <span class="hljs-attr">host</span>: dbConfig.host,
+            <span class="hljs-attr">port</span>: dbConfig.port,
+            <span class="hljs-attr">user</span>: dbConfig.user,
+            <span class="hljs-attr">password</span>: dbConfig.password,
+            <span class="hljs-attr">db</span>: dbConfig.db,
+            <span class="hljs-attr">ssl</span>: {
+                <span class="hljs-attr">ca</span>: dbConfig.ssl.ca
+            }
+        }, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, conn</span>) </span>{
+            <span class="hljs-keyword">if</span> (err) connectionError(err);
+            rconnection = conn;
+            r.table(appointments_table).get(appointmentID)(<span class="hljs-string">"patient"</span>).run(rconnection, <span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">err, result</span>) </span>{
+                <span class="hljs-keyword">if</span> (err) queryError(err);
+                <span class="hljs-built_in">console</span>.log(result);
+                socket.emit(<span class="hljs-string">"checkAvailabilityResults"</span>, result);
+
+            });
+        });
+
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-51">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-51">&#182;</a>
+              </div>
+              <p> <strong><em>validateEmail</em></strong></p>
+<p> <strong>What:</strong>
+  Validates an email using neverbounce</p>
+<p> <strong>Why:</strong>
+ To validate that the email that was entered exists</p>
+<p> <strong>When:</strong>
+ After the regex checks are applied</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+    socket.on(<span class="hljs-string">"validateEmail"</span>,<span class="hljs-function"><span class="hljs-keyword">function</span> (<span class="hljs-params">email</span>) </span>{
+        NeverBounce.single.verify(email).then(
+            <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">result</span>) </span>{
+                <span class="hljs-keyword">if</span>(result.is(<span class="hljs-number">0</span>)){
+                    socket.emit(<span class="hljs-string">'validEmail'</span>);
+                }
+                <span class="hljs-keyword">else</span>{
+                    <span class="hljs-built_in">console</span>.log(result);
+                    socket.emit(<span class="hljs-string">'invalidEmail'</span>);
+                }
+            },
+            <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params">error</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-52">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-52">&#182;</a>
+              </div>
+              <p>errors will bubble up through the reject method of the promise.
+you’ll want to console.log them otherwise it’ll fail silently</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>                <span class="hljs-built_in">console</span>.log(error);
+                serverError(<span class="hljs-string">'Unable to contact email validation service'</span>, <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>().stack);
+            }
+        );
+
     });
 
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">dateIsValid</span>(<span class="hljs-params">date</span>) </span>{</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-53">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-53">&#182;</a>
+              </div>
+              <p>date is passed in as a string in the following format : “yyyymmdd”</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">var</span> checkDate = moment(date);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-54">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-54">&#182;</a>
+              </div>
+              <p>creating checkDate as a moment object allows us to use the isValid method to ensure the date is a valid date</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>        <span class="hljs-keyword">return</span> (checkDate.isValid());
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">serverError</span>(<span class="hljs-params">message, err</span>)</span>{
+        <span class="hljs-keyword">if</span> (app.get(<span class="hljs-string">'env'</span>) === <span class="hljs-string">'development'</span>)
+        {
+            socket.emit(<span class="hljs-string">'errorRedirect'</span>, message, err);
+        }
+        <span class="hljs-keyword">else</span>{
+            socket.emit(<span class="hljs-string">'errorRedirect'</span>, message,<span class="hljs-string">''</span>);
+        }
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">connectionError</span>(<span class="hljs-params">err</span>)</span>{
+        serverError(<span class="hljs-string">'Cannot connect to the database.'</span>, err.stack);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">queryError</span>(<span class="hljs-params">err</span>)</span>{
+        serverError(<span class="hljs-string">'Cannot complete query.'</span>, err.stack);
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">responseError</span>(<span class="hljs-params">err</span>)</span>{
+        serverError(<span class="hljs-string">'Cannot format query response.'</span>, err.stack);
+    }
 
 
-
-});
-
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">"App listening on port"</span> + port);</pre></div></div>
+});</pre></div></div>
             
         </li>
         

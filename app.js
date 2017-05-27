@@ -45,7 +45,17 @@ else {
 }
 
 // ensure https
+// ensure http
+app.use(function (req, res, next) {
+    var sslUrl;
+    if (process.env.NODE_ENV === 'production' &&
+        req.headers['x-forwarded-proto'] !== 'https') {
 
+        sslUrl = [domain, req.url].join('');
+        return res.redirect(sslUrl);
+    }
+    return next();
+});
 
 
 // Initialize services

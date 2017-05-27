@@ -19,6 +19,30 @@ var validator = require('validator');
 var helmet = require('helmet');
 
 
+var DEBUG;
+var domain;
+var appointments_table;
+var patients_table;
+
+if (app.get('env') === 'development')
+{
+    DEBUG = true;
+}
+else{
+    DEBUG = false;
+}
+
+
+if (DEBUG){
+    appointments_table = 'appointments_staging';
+    patients_table = 'patients_staging';
+    domain = "https://staging-walkinexpress.herokuapp.com";
+}
+else {
+    appointments_table = 'appointments';
+    patients_table = 'patients';
+    domain = "https://walkinexpress.ca";
+}
 
 // ensure https
 app.use(function (req, res, next) {
@@ -34,19 +58,6 @@ app.use(function (req, res, next) {
     return next();
 });
 
-var DEBUG;
-
-if (app.get('env') === 'development')
-{
-     DEBUG = true;
-}
-else{
-     DEBUG = false;
-}
-
-var domain;
-var appointments_table;
-var patients_table;
 
 // Initialize services
 
@@ -62,23 +73,10 @@ var NeverBounce = require('neverbounce')({
 
 app.use(helmet());
 
-
 app.use(helmet.hsts({
     maxAge: 15552000  // 180 days in seconds
 }));
 
-
-// Change tables based on production or staging
-if (DEBUG){
-     appointments_table = 'appointments_staging';
-     patients_table = 'patients_staging';
-     domain = "https://staging-walkinexpress.herokuapp.com";
-}
-else {
-    appointments_table = 'appointments';
-    patients_table = 'patients';
-    domain = "https://walkinexpress.ca";
-}
 
 var routes = require('./routes/indexRoutes');
 var user = require('./routes/dashboardRoute');
@@ -266,8 +264,7 @@ io.on("connection", function (socket) {
     //
     socket.on("updateAppointmentsDashboard", function (date) {
         if(dateIsValid(date)) {
-            // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
-            // only other way is to parse date string manually and then create a date object by passing in each value
+
             var validDate = moment.utc(date).toDate();
 
             r.connect({

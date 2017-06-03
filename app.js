@@ -46,7 +46,12 @@ else {
 
 // ensure https
 // ensure http
-
+app.get('*',function(req,res,next){
+    if(req.headers['x-forwarded-proto']!=='https')
+        res.redirect('https://www.walkinexpress.ca'+req.url);
+    else
+        next() /* Continue to other routes if we're not redirecting */
+});
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients

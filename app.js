@@ -41,22 +41,11 @@ if (DEBUG){
 else {
     appointments_table = 'appointments';
     patients_table = 'patients';
-    domain = "https://walkinexpress.ca";
+    domain = "https://www.walkinexpress.ca";
 }
 
 // ensure https
 // ensure http
-app.use(function (req, res, next) {
-    var sslUrl;
-    if (process.env.NODE_ENV === 'production' &&
-        req.headers['x-forwarded-proto'] !== 'https') {
-
-        sslUrl = [domain, req.url].join('');
-        return res.redirect(sslUrl);
-    }
-    return next();
-});
-
 
 // Initialize services
 
@@ -280,7 +269,9 @@ io.on("connection", function (socket) {
                 rconnection = conn;
                 r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
                     if (err) queryError(err);
-                    cursor.each(function (err, result) {
+                    myCursor = cursor;
+                    socket.emit("cursorCheck", myCursor);
+                    myCursor.each(function (err, result) {
                         if (err)responseError(err);
                         console.log(result);
                         socket.emit("updateAppointmentsDashboardResults", result);

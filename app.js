@@ -36,21 +36,27 @@ else{
 if (DEBUG){
     appointments_table = 'appointments_staging';
     patients_table = 'patients_staging';
-    domain = "https://staging-walkinexpress.herokuapp.com";
+    domain = "localhost:8000";
 }
 else {
     appointments_table = 'appointments';
     patients_table = 'patients';
-    domain = "https://www.walkinexpress.ca";
+    domain = 'https://www.walkinexpress.ca';
 }
 
 // ensure https
 // ensure http
-app.get('*',function(req,res,next){
-    if(req.headers['x-forwarded-proto']!=='https')
-        res.redirect('https://www.walkinexpress.ca'+req.url);
-    else
-        next() /* Continue to other routes if we're not redirecting */
+app.all('*',function(req,res,next){
+    if (app.get('env') !== 'development') {
+        if (req.headers['x-forwarded-proto'] !== 'https')
+            res.redirect('https://www.walkinexpress.ca' + req.url);
+        else
+            next();
+    }
+    else{
+        next();
+    }
+        /* Continue to other routes if we're not redirecting */
 });
 // Initialize services
 
@@ -259,6 +265,7 @@ io.on("connection", function (socket) {
         if(dateIsValid(date)) {
 
             var validDate = moment.utc(date).toDate();
+            var testCursor;
 
             r.connect({
                 host: dbConfig.host,
@@ -272,18 +279,17 @@ io.on("connection", function (socket) {
             }, function (err, conn) {
                 if (err) connectionError(err);
                 rconnection = conn;
-                r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
-                    if (err) queryError(err);
-                    myCursor = cursor;
-                    socket.emit("cursorCheck", myCursor);
-                    myCursor.each(function (err, result) {
-                        if (err)responseError(err);
-                        console.log(result);
-                        socket.emit("updateAppointmentsDashboardResults", result);
 
-
+                    r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
+                        if (err) console.log(new Error().stack);
+                        testCursor = cursor;
+                        console.log(testCursor);
+                        testCursor.each(function (err, result) {
+                            if (err) responseError(err);
+                            console.log(result);
+                            socket.emit("updateAppointmentsDashboardResults", result);
+                        });
                     });
-                });
             });
         }
         else{

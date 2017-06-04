@@ -123,11 +123,7 @@ var vm = new Vue({
 
 
         });
-
-        socket.on('cursorCheck', function(myCursor){
-           console.log(myCursor);
-        });
-
+        
         socket.on("initRecords",function(data) {
             for (var i = 0; i < data.length; i++) {
                 if(data[i].patient!=null) {

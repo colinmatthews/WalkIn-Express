@@ -281,11 +281,18 @@ io.on("connection", function (socket) {
                 rconnection = conn;
 
                     r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
-                        if (err) console.log(new Error().stack);
+                        if (err) {
+                            console.log(new Error().stack);
+                            console.log(" After query: "+err);
+                        }
                         testCursor = cursor;
                         console.log(testCursor);
                         testCursor.each(function (err, result) {
-                            if (err) responseError(err);
+                            if (err) {
+                                    console.log(new Error().stack);
+                                    console.log(" After cursor: "+err);
+
+                            }
                             console.log(result);
                             socket.emit("updateAppointmentsDashboardResults", result);
                         });

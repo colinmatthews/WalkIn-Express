@@ -46,7 +46,7 @@ var modal = {
         //
 
         enableSubmit:function () {
-            if(document.getElementById("submitCheck").checked){
+            if(document.getElementById("privacyCheck").checked && document.getElementById("emailCheck").checked){
                 document.getElementById("submit").disabled = false;
             }
             else{
@@ -72,7 +72,8 @@ var modal = {
             var valid = true;
             var DOB = document.getElementById("dobInput").value;
             var address =  document.getElementById("addressInput").value;
-            var name =  document.getElementById("nameInput").value ;
+            var fname =  document.getElementById("fNameInput").value ;
+            var lname =  document.getElementById("lNameInput").value ;
             var phone =  document.getElementById("phoneInput").value;
             var email = document.getElementById("emailInput").value;
 
@@ -87,10 +88,16 @@ var modal = {
                     ( /(?:^|\s)hide(?!\S)/g , '' )
 
             }
-            if( name == ""){
+            if( fname === ""){
                 valid = false;
-                document.getElementById("name-alert").className =
-                    document.getElementById("name-alert").className.replace
+                document.getElementById("fname-alert").className =
+                    document.getElementById("fname-alert").className.replace
+                    ( /(?:^|\s)hide(?!\S)/g , '' )
+            }
+            if( lname === ""){
+                valid = false;
+                document.getElementById("lname-alert").className =
+                    document.getElementById("lname-alert").className.replace
                     ( /(?:^|\s)hide(?!\S)/g , '' )
             }
 
@@ -102,7 +109,7 @@ var modal = {
                     ( /(?:^|\s)hide(?!\S)/g , '' )
             }
 
-            if( address == ""){
+            if( address === ""){
                 valid = false;
                 document.getElementById("address-alert").className =
                     document.getElementById("address-alert").className.replace
@@ -117,40 +124,49 @@ var modal = {
             }
 
             if(valid){
-                socket.emit('validateEmail', email);
+                var minor = false;
+                if(moment().diff(valiDate,"years")<18){
+                    if(confirm("You are under 18. Do you have parental consent to book this appointment?")===false){
+                        minor = true;
+                    }
+                }
 
-                socket.on('validEmail', function () {
+                if(!minor) {
+                    socket.emit('validateEmail', email);
 
-                    var data={
-                        "DOB":  DOB,
-                        "doctor_id":"123ABC",
-                        "address":  address,
-                        "name": name,
-                        "phone": phone,
-                        "email": email
-                    };
+                    socket.on('validEmail', function () {
 
-                    socket.emit("checkAvailability", appointmentID);
+                        var data = {
+                            "DOB": DOB,
+                            "doctor_id": "123ABC",
+                            "address": address,
+                            "name": fname,
+                            "phone": phone,
+                            "email": email
+                        };
 
-                    socket.on("checkAvailabilityResults",function(result){
-                        console.log(result);
-                        if(result == null) { // result returns the appointments patient field ( will be null when there is no patient)
-                            socket.emit("createPatient", data);
-                            socket.on("newPatientID", function (patientID) {
-                                console.log(patientID);
-                                socket.emit("assignAppointment", patientID, appointmentID);
-                                window.location.replace("/success");
-                            });
+                        socket.emit("checkAvailability", appointmentID);
 
-                        }
-                        else{
-                            localStorage.setItem("error", 'That appointment has already been booked!');
-                            window.location.replace("../error");
-                        }
+                        socket.on("checkAvailabilityResults", function (result) {
+                            console.log(result);
+                            if (result === null) { // result returns the appointments patient field ( will be null when there is no patient)
+                                socket.emit("createPatient", data);
+                                socket.on("newPatientID", function (patientID) {
+                                    console.log(patientID);
+                                    socket.emit("assignAppointment", patientID, appointmentID);
+                                    window.location.replace("/success");
+                                });
+
+                            }
+                            else {
+                                localStorage.setItem("error", 'That appointment has already been booked!');
+                                window.location.replace("../error");
+                            }
+
+                        });
 
                     });
-
-                });
+                }
 
                 socket.on('invalidEmail', function () {
 

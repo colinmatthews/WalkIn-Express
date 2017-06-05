@@ -32,10 +32,6 @@ block content
                         |
                         b#noBookings No appointments available!
 
-
-
-    script(src='https://maps.googleapis.com/maps/api/js?key=AIzaSyC0MxRy96T3Hkl4btgbVrLjWDoWUt4GMug', async='', defer='')
-
     template#appointment
         .list-group
             .list-group-item.clearfix
@@ -60,10 +56,14 @@ block content
                         button.close(type='button', v-on:click="hideElement('email-alert')", aria-label='Close')
                             span(aria-hidden='true') &times;
                         p  Invalid email. Must follow text@address.domain format.
-                    #name-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
-                        button.close(type='button', v-on:click="hideElement('name-alert')")
+                    #fname-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('fname-alert')")
                             span(aria-hidden='true') &times;
-                        p  The name field cannot be empty.
+                        p  The first name field cannot be empty.
+                    #lname-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
+                        button.close(type='button', v-on:click="hideElement('lname-alert')")
+                            span(aria-hidden='true') &times;
+                        p  The last name field cannot be empty.
                     #phone-alert.alert.alert-warning.alert-dismissible.hide(role='alert')
                         button.close(type='button', v-on:click="hideElement('phone-alert')", aria-label='Close')
                             span(aria-hidden='true') &times;
@@ -79,9 +79,13 @@ block content
                         div(name='body')
                             .form-group
                                 .form-input
-                                    label(for='nameInput') First Name
+                                    label(for='fNameInput') First Name
                                     |
-                                    input#nameInput.form-control(type='text', placeholder='Name:')
+                                    input#fNameInput.form-control(type='text', placeholder='First Name:')
+                                .form-input
+                                    label(for='lNameInput') Last Name
+                                    |
+                                    input#lNameInput.form-control(type='text', placeholder='Last Name:')
                                 .form-input
                                     label(for='phoneInput') Phone Number
                                     |
@@ -99,11 +103,16 @@ block content
                                     |
                                     input#dobInput.form-control(type='text', placeholder='DOB:(MM/DD/YYYY)')
                                 .form-input
-                                    input#submitCheck(type='checkbox', v-on:click='enableSubmit()')
+                                    input#privacyCheck(type='checkbox', v-on:click='enableSubmit()')
                                     |
-                                    label.mobileLabel
+                                    label.mobileLabel(for="privacyCheck")
                                         | I agree to the
                                         a(href='/privacy', target='_blank')  privacy policy.
+                                .form-input
+                                    input#emailCheck(type='checkbox', v-on:click='enableSubmit()' )
+                                    |
+                                    label.mobileLabel(for="emailCheck")
+                                        | I agree to receive emails regarding my appointment and this product.
                             .modal-footer
                                 #footer
                                     div(id ="loader")

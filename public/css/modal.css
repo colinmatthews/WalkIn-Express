@@ -17,8 +17,7 @@
 
 
 .modal-container {
-    width: 600px;
-    max-height: 100%;
+    width: 650px;
     margin: auto;
     padding: 20px 30px;
     background-color: #fff;
@@ -27,6 +26,7 @@
     transition: all .3s ease;
     font-family: Helvetica, Arial, sans-serif;
 
+    max-height: calc(100vh - 10px);
     overflow-y: auto;
 }
 
@@ -61,8 +61,6 @@
 
     .modal-container{
         width: 90%;
-        height: 100%;
-        max-height: 95%
 
     }
 
@@ -74,11 +72,9 @@
         display: none;
     }
 
+
     .mobileLabel{
         display: inherit;
-    }
-    #map{
-        display: none;
     }
 
     .row{

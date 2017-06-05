@@ -46,6 +46,7 @@ else {
 
 // ensure https
 // ensure http
+/*
 app.all('*',function(req,res,next){
     if (app.get('env') !== 'development') {
         if (req.headers['x-forwarded-proto'] !== 'https')
@@ -56,8 +57,9 @@ app.all('*',function(req,res,next){
     else{
         next();
     }
-        /* Continue to other routes if we're not redirecting */
+
 });
+*/
 // Initialize services
 
 // Sparkpost is used for sending emails to the patients

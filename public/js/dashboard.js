@@ -9,14 +9,10 @@
 
 //*** Variable Initialization ***
 
-
-
-//Creates a new date object that only is formated as : mm/dd/yyyy
-var today = new Date().toLocaleString([],{month:'2-digit',day:'2-digit',year:'numeric'});
+var today = moment(new Date()).format('YYYYMMDD');
 console.log(today);
-// Connects to the server file, app.js
 var socket = io.connect();
-// Calls the initial function for the page when the page loads, to get the initial appointments for today
+
 socket.emit("getInitialPatients", today);
 
 
@@ -126,7 +122,7 @@ var vm = new Vue({
         
         socket.on("initRecords",function(data) {
             for (var i = 0; i < data.length; i++) {
-                if(data[i].patient!=null) {
+                if(data[i].patient!==null) {
                     vm.inventory.push({
                         time: data[i].time, id: data[i].id, DOB: data[i].DOB,
                         phone: data[i].phone, address: data[i].address, name: data[i].name, patient: data[i].patient,
@@ -152,7 +148,7 @@ var vm = new Vue({
         //
         socket.on("updateAppointmentsDashboardResults",function(data){
 
-            /* if an existing appointment is deleted
+            /* if an existing appointment is deleted or viewed
 
              */
             if(data.new_val === null || data.new_val.viewed === true) {

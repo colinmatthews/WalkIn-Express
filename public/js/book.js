@@ -46,12 +46,9 @@ var modal = {
         //
 
         enableSubmit:function () {
-            if(document.getElementById("privacyCheck").checked && document.getElementById("emailCheck").checked){
-                document.getElementById("submit").disabled = false;
-            }
-            else{
-                document.getElementById("submit").disabled = true;
-            }
+
+            document.getElementById("submit").disabled = !(document.getElementById("privacyCheck").checked
+                && document.getElementById("emailCheck").checked);
 
         },
 
@@ -68,6 +65,10 @@ var modal = {
         //
 
         validateForm:function(appointmentID){
+
+            var bookButton =document.getElementById('submit');
+            bookButton.disabled=true;
+            bookButton.innerHTML = "Loading...";
 
             var valid = true;
             var DOB = document.getElementById("dobInput").value;
@@ -168,14 +169,27 @@ var modal = {
                     });
                 }
 
+                // is a minor
+                else{
+                    bookButton.disabled=false;
+                    bookButton.innerHTML = "Book!";
+                }
+
                 socket.on('invalidEmail', function () {
 
+                    bookButton.disabled=false;
+                    bookButton.innerHTML = "Book!";
                     valid = false;
                     document.getElementById("invalidEmail-alert").className =
                         document.getElementById("invalidEmail-alert").className.replace
                         ( /(?:^|\s)hide(?!\S)/g , '' )
 
                 });
+            }
+            // not valid
+            else{
+                bookButton.disabled=false;
+                bookButton.innerHTML = "Book!";
             }
         },
 

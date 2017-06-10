@@ -387,33 +387,41 @@ io.on("connection", function (socket) {
     //
 
     socket.on("remakeAppointmentSlot", function (time,date,displayTime) {
-        console.log(date);
-        r.connect({
-            host: dbConfig.host,
-            port: dbConfig.port,
-            user: dbConfig.user,
-            password: dbConfig.password,
-            db: dbConfig.db,
-            ssl: {
-                ca: dbConfig.ssl.ca
-            }
-        }, function (err, conn) {
-            if (err) connectionError(err);
-            rconnection = conn;
+        if(dateIsValid(date)) {
+            var validDate = moment.utc(date).toDate();
+            console.log(date);
+            r.connect({
+                host: dbConfig.host,
+                port: dbConfig.port,
+                user: dbConfig.user,
+                password: dbConfig.password,
+                db: dbConfig.db,
+                ssl: {
+                    ca: dbConfig.ssl.ca
+                }
+            }, function (err, conn) {
+                if (err) connectionError(err);
+                rconnection = conn;
 
-            r.table(appointments_table).insert({
-                "patient": null,
-                "time": time,
-                "viewed": false,
-                "displayTime": displayTime,
-                timestamp: new Date(date+"UTC")
-            }).run(rconnection, function (err, cursor) {
-                if (err) queryError(err);
-                console.log("NEW APPOINTMENT MADE " + cursor);
+                console.log(time);
+
+                r.table(appointments_table).insert({
+                    "patient": null,
+                    "time": 10,
+                    "viewed": false,
+                    "displayTime": displayTime,
+                    timestamp: validDate
+                }).run(rconnection, function (err, cursor) {
+                    if (err) queryError(err);
+                    console.log("NEW APPOINTMENT MADE " + cursor);
+                });
             });
-        });
+        }
 
     });
+
+
+
 
 
 
@@ -671,6 +679,7 @@ io.on("connection", function (socket) {
                 }
 
             }
+            var time = hour + (minute/60);
 
             r.table(appointments_table).insert({
                 "patient": null,

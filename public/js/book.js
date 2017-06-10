@@ -141,7 +141,7 @@ var modal = {
                             "DOB": DOB,
                             "doctor_id": "123ABC",
                             "address": address,
-                            "name": fname,
+                            "name": fname +" " +lname,
                             "phone": phone,
                             "email": email
                         };

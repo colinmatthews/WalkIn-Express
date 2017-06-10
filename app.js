@@ -139,8 +139,7 @@ io.on("connection", function (socket) {
      */
     socket.on("getInitialPatients", function (date) {
         if(dateIsValid(date)) {
-            // take date string, turn it into a moment object, convert it to a javascript date and make it UTC
-            // only other way is to parse date string manually and then create a date object by passing in each value
+
             var validDate = moment.utc(date).toDate();
 
             console.log("Today in getInitialPatients");
@@ -210,24 +209,24 @@ io.on("connection", function (socket) {
                 if (err) connectionError(err);
                 rconnection = conn;
 
-                    r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp')
-                    .date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
+                r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate))
+                .changes().run(rconnection, function (err, cursor) {
+                    if (err) {
+                        console.log(new Error().stack);
+                        console.log(" After query: "+err);
+                    }
+                    testCursor = cursor;
+                    console.log(testCursor);
+                    testCursor.each(function (err, result) {
                         if (err) {
-                            console.log(new Error().stack);
-                            console.log(" After query: "+err);
-                        }
-                        testCursor = cursor;
-                        console.log(testCursor);
-                        testCursor.each(function (err, result) {
-                            if (err) {
-                                    console.log(new Error().stack);
-                                    console.log(" After cursor: "+err);
+                                console.log(new Error().stack);
+                                console.log(" After cursor: "+err);
 
-                            }
-                            console.log(result);
-                            socket.emit("updateAppointmentsDashboardResults", result);
-                        });
+                        }
+                        console.log(result);
+                        socket.emit("updateAppointmentsDashboardResults", result);
                     });
+                });
             });
         }
         else{

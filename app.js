@@ -2,7 +2,7 @@
  * Created by colin on 10/27/2016.
  */
 
-//### Initialization
+//### Initialization ###
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
@@ -17,71 +17,47 @@ var cookieSession = require('cookie-session');
 var moment = require('moment');
 var validator = require('validator');
 var helmet = require('helmet');
-
-
-var DEBUG;
-var domain;
-var appointments_table;
-var patients_table;
-
-if (app.get('env') === 'development')
-{
-    DEBUG = true;
-}
-else{
-    DEBUG = false;
-}
-
-
-if (DEBUG){
-    appointments_table = 'appointments_staging';
-    patients_table = 'patients_staging';
-    domain = "localhost:8000";
-}
-else {
-    appointments_table = 'appointments';
-    patients_table = 'patients';
-    domain = 'https://www.walkinexpress.ca';
-}
-
-// ensure https
-// ensure http
-
-app.all('*',function(req,res,next){
-    if (app.get('env') !== 'development') {
-        if (req.headers['x-forwarded-proto'] !== 'https')
-            res.redirect('https://www.walkinexpress.ca' + req.url);
-        else
-            next();
-    }
-    else{
-        next();
-    }
-        /* Continue to other routes if we're not redirecting */
-});
-// Initialize services
-
-// Sparkpost is used for sending emails to the patients
+var config = require('./middleware/config');
 var SparkPost = require('sparkpost');
-var client = new SparkPost('15756eb2514dee0c0c069401c1f49a99456f790c');
-
-// Neverbounce is used to validate the email a patient enters when booking an appointment (1000/month free)
+var ensureHTTPS = require('./middleware/ensureHTTPS');
+var DEBUG = require('./middleware/debug');
+var error404 = require('./middleware/error404');
 var NeverBounce = require('neverbounce')({
-    apiKey: 'Bp4jC20K',
-    apiSecret: 'Yzu8C125gtbYR4F'
+    apiKey: config.neverBounce.apiKey,
+    apiSecret: config.neverBounce.apiSecret
 });
 
-app.use(helmet());
 
-app.use(helmet.hsts({
-    maxAge: 15552000  // 180 days in seconds
+// ## Setup Middleware ##
+app.use(ensureHTTPS(app.get('env')));
+app.use(helmet());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname + '/views'));
+app.use("/public", express.static(__dirname + '/public'));
+app.use(cookieSession({
+    name: 'das1daaf',
+    keys: ['key1'],
+    cookie: {
+        secure: true,
+        httpOnly: true,
+        domain: domain, //
+        expires: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 
 
-var routes = require('./routes/indexRoutes');
-var user = require('./routes/dashboardRoute');
+// ## Setup Local Variables ##
+var state = DEBUG(app.get('env'));
+var domain = state.domain;
+var appointments_table = state.appointments_table;
+var patients_table = state.patients_table;
+var client = new SparkPost(config.sparkpost.apiKey);
 
-// passport and auth0 are used for user auth for clinic login
+
+
+// ## Setup Passport and Auth0 ##
 var strategy = new Auth0Strategy({
     domain:       process.env.AUTH0_DOMAIN,
     clientID:     process.env.AUTH0_CLIENT_ID,
@@ -93,65 +69,29 @@ var strategy = new Auth0Strategy({
     // profile has all the information from the user
     return done(null, profile);
 });
-
 passport.use(strategy);
 
 // This can be used to keep a smaller payload
 passport.serializeUser(function(user, done) {
     done(null, user);
 });
-
 passport.deserializeUser(function(user, done) {
     done(null, user);
 });
-app.set('view engine', 'pug');
-app.set('views', path.join(__dirname + '/views'));
-app.use("/public", express.static(__dirname + '/public'));
-
-// App.use lines setup express session
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieSession({
-    name: 'googoogaagah',
-    keys: ['key1'],
-
-    cookie: {
-        secure: true,
-        httpOnly: true,
-        domain: domain, //
-        expires: 24 * 60 * 60 * 1000 // 24 hours
-    }
-
-
-}));
-
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Setup server
 
+
+// ## Setup Routes ##
+var routes = require('./routes/indexRoutes');
+var user = require('./routes/dashboardRoute');
 app.use('/', routes);
 app.use('/dashboard', user);
+app.use(error404());
 
-app.use(function(req, res, next){
-    res.status(404);
 
-    // respond with html page
-    if (req.accepts('html')) {
-        res.render('404', { url: req.url });
-        return;
-    }
-
-    // respond with json
-    if (req.accepts('json')) {
-        res.send({ error: 'Not found' });
-        return;
-    }
-
-    // default to plain-text. send()
-    res.type('txt').send('Not found');
-});
-
+// ## Launch Server ##
 var port = process.env.PORT;
 http.listen(port || 8000, function(){
     console.log("Express server listening on port %d in %s mode", this.address().port, app.settings.env);
@@ -173,22 +113,11 @@ io.on("connection", function (socket) {
     // created when we run a query with `.changes()` at the end of it.
     var rconnection = null;
     var myCursor = null;
+    var dbConfig = config.dbConfig;
 
     console.log("You connected!");
 
-    // caCert is a SSL certificate for connecting to db
-    var caCert = fs.readFileSync(__dirname + '/cacert.txt').toString().trim();
 
-    var dbConfig = {
-        host: 'aws-us-east-1-portal.11.dblayer.com',
-        port: 15568,
-        user: 'colin',
-        password: "9753186420TQRs",
-        db: "WalkInExpress",
-        ssl: {
-            ca: caCert
-        }
-    };
 
     //### Dashboard.js
     //***
@@ -281,7 +210,8 @@ io.on("connection", function (socket) {
                 if (err) connectionError(err);
                 rconnection = conn;
 
-                    r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
+                    r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp')
+                    .date().eq(new Date(validDate))).changes().run(rconnection, function (err, cursor) {
                         if (err) {
                             console.log(new Error().stack);
                             console.log(" After query: "+err);
@@ -629,7 +559,8 @@ io.on("connection", function (socket) {
             }, function (err, conn) {
                 if (err) connectionError(err);
                 rconnection = conn;
-                r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).changes().run(rconnection, function (err, cursor) {
+                r.db('WalkInExpress').table(appointments_table).filter(r.row('timestamp').date().eq(validDate))
+                .changes().run(rconnection, function (err, cursor) {
                     console.log('here');
                     if (err) queryError(err);
                     myCursor=cursor;
@@ -788,7 +719,8 @@ io.on("connection", function (socket) {
                 }, function (err, conn) {
                     if (err) connectionError(err);
                     rconnection = conn;
-                    r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate)).filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
+                    r.table(appointments_table).filter(r.row('timestamp').date().eq(validDate))
+                    .filter({patient: null}).orderBy('time').run(rconnection, function (err, cursor) {
                         if (err) queryError(err);
                         // implement next(err);
                         // and error handling

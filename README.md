@@ -1,38 +1,5 @@
-# Vue-Dashboard
+# Walk In Express
 
-Version 1.0.0 Checklist
+Walk In Express is a online booking platform for walk-in clinics. It give patients peace of mind know they will be seen, and allows clinics to better scheudle their time.
 
-
-<b>Dashboard:</b>
-
-1) Integrate dates into rethinkdb
-
-2) Integrate dates into client
-
-3) Clear local content when changing dates
-
-4) Make changefeed for set.js for current date selected
-
-5) Make it clear which appointments are booked or not
-
-6) Do not allow booked appointments to be removed
-
-7) Allow user to review information on booked appointments
-
-8) Allow clinic to confirm or deny appointments via popup
-
-
-<b>Site:</b>
-
-1) Update social banner
-
-2) Add an about us/ contact us
-
-3) Change registration information 
-
-4) Change confirmation email contents
-
-
-<b>Booking:</b>
-
-1) Change drop down form to modal
+Built with Express, rethinkdb, and vueJS

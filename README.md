@@ -1,4 +1,8 @@
-# Walk In Express
+
+
+
+![alt text](https://raw.githubusercontent.com/colinmatthews/WalkIn-Express/master/public/img/banner.png)
+
 
 ## Update: Won WeTech Technology Award for 2016 ##
 
@@ -15,7 +19,8 @@ Noteable features:
 | Database       | RethinkDB (noSQL)|
 | Back End       | NodeJS           |
 | Web Server     | Express          |
-| Front End      | VueJs            |
+| Virtual DOM    | VueJs            |
+| Template Engine| Pug              |
 | Websockets     | Socket.IO        |
 | Authentication | Passport/Auth0   |
 | Sessions       | CookieSessions   |
